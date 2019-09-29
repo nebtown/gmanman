@@ -1,9 +1,26 @@
-/**
- * Configure your Gatsby site with this file.
- *
- * See: https://www.gatsbyjs.org/docs/gatsby-config/
- */
-
 module.exports = {
-  /* Your site config here */
-}
+	siteMetadata: {
+		title: "Gman Server Manager",
+	},
+	pathPrefix: "/gmanman",
+	plugins: [
+		{
+			resolve: `gatsby-plugin-material-ui`,
+			options: {
+				stylesProvider: {
+					injectFirst: true,
+				},
+				disableMinification: true,
+			},
+		},
+		`gatsby-plugin-sass`,
+		`gatsby-transformer-json`,
+		{
+			resolve: `gatsby-source-filesystem`,
+			options: {
+				name: `srcData`,
+				path: `${__dirname}/src/data/`,
+			},
+		},
+	],
+};
