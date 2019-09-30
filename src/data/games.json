@@ -1,10 +1,9 @@
 [
   {
     "name": "Minecraft",
-    "status": "unknown"
+    "url": "https://gman.nebtown.info/gmanman/mc/"
   },
   {
-    "name": "Garry's Mod",
-    "status": "running"
+    "name": "Garry's Mod"
   }
 ]

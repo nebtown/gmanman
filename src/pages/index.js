@@ -18,7 +18,7 @@ export default () => {
 				allGamesJson {
 					nodes {
 						name
-						status
+						url
 					}
 				}
 				site {
@@ -37,9 +37,9 @@ export default () => {
 			</Typography>
 
 			<Grid container spacing={5} component="main">
-				{games.map(({ name, status }) => (
+				{games.map(({ name, url }) => (
 					<Grid item key={name} xs={12} sm={6} md={4}>
-						<ServerCard key={name} title={name} status={status || "unknown"} />
+						<ServerCard key={name} title={name} url={url} />
 					</Grid>
 				))}
 			</Grid>

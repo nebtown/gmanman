@@ -1,0 +1,17 @@
+{
+  "name": "gman-api-mc",
+  "version": "0.1",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "docker-compose": "^0.22.2",
+    "dockerode": "^3.0.1",
+    "express": "^4.17.1",
+    "minimist": "^1.2.0",
+    "modern-rcon": "^1.0.3"
+  }
+}
