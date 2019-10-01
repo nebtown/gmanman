@@ -1,9 +1,11 @@
 [
   {
     "name": "Minecraft",
-    "url": "https://gman.nebtown.info/gmanman/mc/"
+    "controlUrl": "https://gman.nebtown.info/gmanman/mc/control/",
+    "logsUrl": "https://gman.nebtown.info/gmanman/mc/logs/"
   },
   {
-    "name": "Garry's Mod"
+    "name": "Garry's Mod (todo)",
+    "controlUrl": "https://gman.nebtown.info/gmanman/mc/test/control/?todo"
   }
 ]

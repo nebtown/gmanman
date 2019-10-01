@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 
@@ -17,8 +17,10 @@ import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 import CloudOffIcon from "@material-ui/icons/CloudOff";
 import FlightLandIcon from "@material-ui/icons/FlightLand";
 import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
+import SubjectIcon from "@material-ui/icons/Subject";
 
-import { useInterval } from "../util/hooks";
+import { useInterval, useMountEffect } from "../util/hooks";
+import LogViewer from "./LogViewer";
 
 ServerCard.propTypes = {
 	title: PropTypes.string.isRequired,
@@ -31,19 +33,21 @@ ServerCard.propTypes = {
 	]),
 };
 
-export default function ServerCard({ title, url }) {
+export default function ServerCard({ title, controlUrl, logsUrl }) {
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
+	const [logOpen, setLogOpen] = React.useState(false);
+	const [logLines, setLogLines] = React.useState("");
 
 	const pollStatus = async () => {
-		if (!url) {
-			console.warn(`Cannot poll ${title}, missing url`);
+		if (!controlUrl) {
+			console.warn(`Cannot poll ${title}, missing controlUrl`);
 			return;
 		}
 		try {
 			const {
 				data: { status: newStatus, playerCount: newNumPlayers },
-			} = await axios.get(url + "control/");
+			} = await axios.get(controlUrl);
 			setStatus(newStatus);
 			setNumPlayers(newNumPlayers !== null ? newNumPlayers : -1);
 		} catch (e) {
@@ -70,9 +74,19 @@ export default function ServerCard({ title, url }) {
 			pollStatus();
 		}
 	}, 5000);
-	useEffect(() => {
+	useMountEffect(() => {
 		pollStatus();
-	}, []);
+	});
+
+	useInterval(async () => {
+		if (document.hidden || !logOpen) {
+			return;
+		}
+		const {
+			data: { logs: newLogs },
+		} = await axios.get(logsUrl);
+		setLogLines(newLogs);
+	}, 2000);
 
 	const statusIcon =
 		status === "stopped" ? (
@@ -117,7 +131,7 @@ export default function ServerCard({ title, url }) {
 					onClick={async () => {
 						const {
 							data: { status: newStatus },
-						} = await axios.put(url + "control/");
+						} = await axios.put(controlUrl);
 						setStatus(newStatus);
 					}}
 				>
@@ -129,13 +143,33 @@ export default function ServerCard({ title, url }) {
 					onClick={async () => {
 						const {
 							data: { status: newStatus },
-						} = await axios.delete(url + "control/");
+						} = await axios.delete(controlUrl);
 						setStatus(newStatus);
 					}}
 				>
 					<StopIcon /> Stop
 				</Button>
+				{logsUrl && (
+					<Button
+						size="small"
+						onClick={async () => {
+							const {
+								data: { logs: newLogs },
+							} = await axios.get(logsUrl);
+							setLogLines(newLogs);
+							setLogOpen(true);
+						}}
+					>
+						<SubjectIcon /> Logs
+					</Button>
+				)}
 			</CardActions>
+			<LogViewer
+				title={title}
+				open={logOpen}
+				setOpen={setLogOpen}
+				logLines={logLines}
+			/>
 		</Card>
 	);
 }

@@ -6,16 +6,24 @@
 * `yarn build` and/or `yarn serve`
 
 ## Todo:
-* list game servers
-* start server button
-    * disabled if status != 'stopped'
-* stop server button
+* game server support:
+    * ~~Minecraft~~
+    * Gmod
+    * Space Engineers
+    * Ark
+    * Factorio
+* ~~list game servers~~
+* ~~start server button~~
+    * ~~disabled if status != 'stopped'~~
+* ~~stop server button~~
     * disabled if numPlayers > 0
     * admin override
-* show status
-* show number of players
+* ~~show status~~
+* ~~show number of players~~
+* ~~show logs~~
 * auto save/backup
 * create manual save/backup
 * load save
 * load specific backup
-
+* Google Auth
+* chat

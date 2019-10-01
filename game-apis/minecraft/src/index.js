@@ -108,7 +108,7 @@ app.get("/logs", async (request, response) => {
 	try {
 		const container = docker.getContainer("minecraft");
 		const logs = await container.logs({ stdout: true, tail: 50 });
-		const logsCleaned = logs.toString().replace(/^(.*?)\[/gm, "");
+		const logsCleaned = logs.toString().replace(/^(.*?)\[/gm, "[");
 		response.json({ logs: logsCleaned });
 	} catch (e) {
 		console.log("/logs: ", e);
