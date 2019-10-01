@@ -40,11 +40,16 @@ export default function ServerCard({ title, url }) {
 			console.warn(`Cannot poll ${title}, missing url`);
 			return;
 		}
-		const {
-			data: { status: newStatus, playerCount: newNumPlayers },
-		} = await axios.get(url + "control/");
-		setStatus(newStatus);
-		setNumPlayers(newNumPlayers !== null ? newNumPlayers : -1);
+		try {
+			const {
+				data: { status: newStatus, playerCount: newNumPlayers },
+			} = await axios.get(url + "control/");
+			setStatus(newStatus);
+			setNumPlayers(newNumPlayers !== null ? newNumPlayers : -1);
+		} catch (e) {
+			console.warn(`Cannot poll ${title}, ${e.message}`);
+			setStatus("unknown");
+		}
 	};
 	useInterval(() => {
 		if (
@@ -55,6 +60,16 @@ export default function ServerCard({ title, url }) {
 			pollStatus();
 		}
 	}, 1000);
+	useInterval(() => {
+		if (document.hidden) {
+			return;
+		}
+		if (
+			!(status === "starting" || status === "stopping" || status === "unknown")
+		) {
+			pollStatus();
+		}
+	}, 5000);
 	useEffect(() => {
 		pollStatus();
 	}, []);
