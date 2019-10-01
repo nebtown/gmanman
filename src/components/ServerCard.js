@@ -6,6 +6,7 @@ import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
+import CardMedia from "@material-ui/core/CardMedia";
 
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
@@ -33,7 +34,7 @@ ServerCard.propTypes = {
 	]),
 };
 
-export default function ServerCard({ title, controlUrl, logsUrl }) {
+export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = React.useState(false);
@@ -111,10 +112,18 @@ export default function ServerCard({ title, controlUrl, logsUrl }) {
 			? "Stopping"
 			: "Status Unknown";
 	return (
-		<Card>
+		<Card
+			raised={["starting", "running", "stopping"].includes(status)}
+			className="game-card"
+		>
 			<CardHeader title={title} />
 			<CardContent>
 				<Grid container direction="row" alignItems="center" spacing={1}>
+					{icon && (
+						<Grid item>
+							<CardMedia image={icon} className="game-icon" />
+						</Grid>
+					)}
 					<Grid item>{statusIcon}</Grid>
 					<Grid item>
 						{statusMessage}

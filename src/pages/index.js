@@ -21,6 +21,7 @@ export default () => {
 						name
 						controlUrl
 						logsUrl
+						icon
 					}
 				}
 				site {
