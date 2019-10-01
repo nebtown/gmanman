@@ -13,7 +13,7 @@ const composeOptions = {
 
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
-	console.log(`Received ${request.method} ${request.originalUrl}`);
+	console.log(`- ${request.method} ${request.originalUrl}`);
 	next();
 });
 
@@ -21,54 +21,89 @@ app.get("/", (request, response) => {
 	response.json({});
 });
 
-let lastStartTime = 0;
-let lastStopTime = 0;
-app.get("/control", async (request, response) => {
-	if (lastStartTime > Date.now() - 3) {
-		// it takes a second for docker to start creating the container
-		response.json({ status: "starting" });
-		return;
+function debugLog(...args) {
+	if (argv.v) {
+		console.log(...args);
 	}
-	if (lastStopTime > Date.now() - 8) {
-		// it takes a second for docker to start creating the container
-		response.json({ status: "stopping" });
-		return;
-	}
+}
 
-	let playerCount = -1;
+async function rconConnect() {
+	if (!this.rcon || !this.rcon.hasAuthed) {
+		this.rcon = new Rcon("localhost", 27075, argv.rconPassword || "", 500);
+		await this.rcon.connect();
+	}
+	return this.rcon;
+}
+
+let currentStatus = "unknown";
+
+async function rconGetPlayerCount() {
+	let playerList;
 	try {
-		const rcon = new Rcon("localhost", 27075, argv.rconPassword || "", 500);
-		await rcon.connect();
-		const playerList = await rcon.send("list");
-		const matches = playerList.match(
-			/There are (\d+) of a max \d+ players online:/
-		);
-		if (!matches) {
-			console.warn("playerList: ", playerList);
-		}
-		playerCount = matches ? Number(matches[1]) : -1;
-		rcon.disconnect();
-
-		response.json({ status: "running", playerCount });
-	} catch {
-		const container = docker.getContainer("minecraft");
-		const containerDetails = await container.inspect();
-
-		const status = containerDetails.State.Running ? "starting" : "stopped";
-
-		response.json({ status });
+		playerList = await (await rconConnect()).send("list");
+	} catch (e) {
+		debugLog("rcon", e.message);
+		return false;
 	}
+	const matches = playerList.match(
+		/There are (\d+) of a max \d+ players online:/
+	);
+	if (!matches) {
+		console.warn("playerList: ", playerList);
+		return false;
+	}
+	return Number(matches[1]);
+}
+
+async function isContainerRunning() {
+	const container = docker.getContainer("minecraft");
+	const containerDetails = await container.inspect();
+
+	return containerDetails.State.Running;
+}
+
+app.get("/control", async (request, response) => {
+	if (["unknown", "starting", "running"].includes(currentStatus)) {
+		let playerCount = await rconGetPlayerCount();
+		if (playerCount !== false) {
+			debugLog(
+				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
+			);
+			currentStatus = "running";
+			return response.json({ status: currentStatus, playerCount });
+		}
+	}
+	if ("unknown" === currentStatus) {
+		currentStatus = (await isContainerRunning()) ? "starting" : "stopped";
+		debugLog("was unknown, now", currentStatus);
+		return response.json({ status: currentStatus });
+	}
+	if ("stopping" === currentStatus) {
+		if (!(await isContainerRunning())) {
+			debugLog("was stopping, now stopped");
+			currentStatus = "stopped";
+			return response.json({ status: currentStatus });
+		}
+	}
+
+	debugLog("repeating old status", currentStatus);
+	return response.json({ status: currentStatus });
 });
 app.put("/control", (request, response) => {
-	lastStartTime = Date.now();
-	compose.upAll(composeOptions);
-	response.json({ status: "starting" });
+	if (["stopped", "unknown"].includes(currentStatus)) {
+		currentStatus = "starting";
+		compose.upAll(composeOptions);
+	}
+	response.json({ status: currentStatus });
 });
 app.delete("/control", (request, response) => {
-	lastStopTime = Date.now();
-	compose.stop(composeOptions);
-	response.json({ status: "stopping" });
+	if (["starting", "running", "unknown"].includes(currentStatus)) {
+		currentStatus = "stopping";
+		compose.stop(composeOptions);
+	}
+	response.json({ status: currentStatus });
 });
+
 app.get("/logs", async (request, response) => {
 	try {
 		const container = docker.getContainer("minecraft");
@@ -82,7 +117,7 @@ app.get("/logs", async (request, response) => {
 });
 
 let statusSimulated = "stopped";
-app.get("/controlTest", (request, response) => {
+app.get("/test/control", (request, response) => {
 	if (statusSimulated === "starting") {
 		statusSimulated = "running";
 	} else if (statusSimulated === "stopping") {
@@ -90,11 +125,11 @@ app.get("/controlTest", (request, response) => {
 	}
 	response.json({ status: statusSimulated });
 });
-app.put("/controlTest", (request, response) => {
+app.put("/test/control", (request, response) => {
 	statusSimulated = "starting";
 	response.json({ status: statusSimulated });
 });
-app.delete("/controlTest", (request, response) => {
+app.delete("/test/control", (request, response) => {
 	statusSimulated = "stopping";
 	response.json({ status: statusSimulated });
 });
