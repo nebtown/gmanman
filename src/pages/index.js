@@ -13,6 +13,7 @@ export default () => {
 		site: {
 			siteMetadata: { title: siteTitle },
 		},
+		allFile: { nodes: files },
 	} = useStaticQuery(
 		graphql`
 			query {
@@ -27,6 +28,16 @@ export default () => {
 				site {
 					siteMetadata {
 						title
+					}
+				}
+				allFile(filter: { relativePath: { regex: "/icons.*\\\\.png/" } }) {
+					nodes {
+						relativePath
+						childImageSharp {
+							fixed(width: 100, height: 100) {
+								...GatsbyImageSharpFixed
+							}
+						}
 					}
 				}
 			}
@@ -50,9 +61,17 @@ export default () => {
 			</Typography>
 
 			<Grid container spacing={5} component="main">
-				{games.map(({ name, ...gameProps }) => (
+				{games.map(({ name, icon, ...gameProps }) => (
 					<Grid item key={name} xs={12} sm={6} md={4}>
-						<ServerCard key={name} title={name} {...gameProps} />
+						<ServerCard
+							key={name}
+							title={name}
+							{...gameProps}
+							icon={
+								files.find(({ relativePath }) => relativePath === icon)
+									?.childImageSharp?.fixed
+							}
+						/>
 					</Grid>
 				))}
 			</Grid>

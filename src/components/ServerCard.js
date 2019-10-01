@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import Img from "gatsby-image";
 
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
-import CardMedia from "@material-ui/core/CardMedia";
 
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
@@ -121,7 +121,7 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 				<Grid container direction="row" alignItems="center" spacing={1}>
 					{icon && (
 						<Grid item>
-							<CardMedia image={icon} className="game-icon" />
+							<Img fixed={icon} className="game-icon" fadeIn={false} />
 						</Grid>
 					)}
 					<Grid item>{statusIcon}</Grid>

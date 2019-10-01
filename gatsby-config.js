@@ -22,6 +22,15 @@ module.exports = {
 				path: `${__dirname}/src/data/`,
 			},
 		},
+		{
+			resolve: `gatsby-source-filesystem`,
+			options: {
+				name: `static`,
+				path: `${__dirname}/static/`,
+			},
+		},
 		`gatsby-plugin-react-helmet`,
+		`gatsby-transformer-sharp`,
+		`gatsby-plugin-sharp`,
 	],
 };
