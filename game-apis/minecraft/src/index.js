@@ -11,6 +11,8 @@ const composeOptions = {
 	cwd: path.join(__dirname, "../"),
 };
 
+const game = argv.game || "minecraft";
+
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
 	console.log(`- ${request.method} ${request.originalUrl}`);
@@ -37,7 +39,7 @@ async function rconConnect() {
 
 let currentStatus = "unknown";
 
-async function rconGetPlayerCount() {
+async function minecraftGetPlayerCount() {
 	let playerList;
 	try {
 		playerList = await (await rconConnect()).send("list");
@@ -55,8 +57,14 @@ async function rconGetPlayerCount() {
 	return Number(matches[1]);
 }
 
+async function getPlayerCount() {
+	if (game === "minecraft") {
+		return await minecraftGetPlayerCount();
+	}
+}
+
 async function isContainerRunning() {
-	const container = docker.getContainer("minecraft");
+	const container = docker.getContainer(game);
 	const containerDetails = await container.inspect();
 
 	return containerDetails.State.Running;
@@ -64,7 +72,7 @@ async function isContainerRunning() {
 
 app.get("/control", async (request, response) => {
 	if (["unknown", "starting", "running"].includes(currentStatus)) {
-		let playerCount = await rconGetPlayerCount();
+		let playerCount = await getPlayerCount();
 		if (playerCount !== false) {
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
@@ -104,12 +112,18 @@ app.delete("/control", (request, response) => {
 	response.json({ status: currentStatus });
 });
 
+async function getGameLogs() {
+	const container = docker.getContainer(game);
+	const logs = await container.logs({stdout: true, tail: 50});
+	if (game === "minecraft") {
+		return logs.toString().replace(/^(.*?)\[/gm, "["); // trim colour codes
+	}
+	return logs.toString();
+}
+
 app.get("/logs", async (request, response) => {
 	try {
-		const container = docker.getContainer("minecraft");
-		const logs = await container.logs({ stdout: true, tail: 50 });
-		const logsCleaned = logs.toString().replace(/^(.*?)\[/gm, "[");
-		response.json({ logs: logsCleaned });
+		response.json({ logs: await getGameLogs() });
 	} catch (e) {
 		console.log("/logs: ", e);
 		response.json({});
