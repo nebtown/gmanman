@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const stripAnsi = require("strip-ansi");
 const argv = require("minimist")(process.argv.slice(2));
 const app = express();
 const compose = require("docker-compose");
@@ -8,7 +9,7 @@ const Rcon = require("modern-rcon");
 const docker = new (require("dockerode"))();
 
 const composeOptions = {
-	cwd: path.join(__dirname, "../"),
+	cwd: argv.dir ? path.join(argv.dir) : path.join(__dirname, "../"),
 };
 
 const game = argv.game || "minecraft";
@@ -29,9 +30,22 @@ function debugLog(...args) {
 	}
 }
 
+function getRconPort() {
+	if (game === "ark") {
+		return 32330;
+	} else if (game === "minecraft") {
+		return 27075;
+	}
+}
+
 async function rconConnect() {
 	if (!this.rcon || !this.rcon.hasAuthed) {
-		this.rcon = new Rcon("localhost", 27075, argv.rconPassword || "", 500);
+		this.rcon = new Rcon(
+			"localhost",
+			getRconPort(),
+			argv.rconPassword || "",
+			500
+		);
 		await this.rcon.connect();
 	}
 	return this.rcon;
@@ -57,9 +71,44 @@ async function minecraftGetPlayerCount() {
 	return Number(matches[1]);
 }
 
+async function arkGetPlayerCount() {
+	// in theory the game has rcon, but it wasn't seeming to work...
+
+	const container = docker.getContainer(game);
+	const exec = await container.exec({
+		AttachStdout: true,
+		Tty: false,
+		Cmd: ["arkmanager", "status"],
+	});
+	let response;
+	try {
+		response = await new Promise(async (resolve, reject) => {
+			await exec.start(async (err, stream) => {
+				if (err) return reject();
+				let message = "";
+				stream.on("data", data => (message += data.toString()));
+				stream.on("end", () => resolve(message));
+			});
+		});
+	} catch (e) {
+		debugLog("arkmanager status exception", e.message);
+		return false;
+	}
+	debugLog("arkmanager status", response);
+
+	const matches = response.match(/Active Players: (\d+)/);
+	if (!matches) {
+		console.warn("playerList: ", response);
+		return false;
+	}
+	return Number(matches[1]);
+}
+
 async function getPlayerCount() {
 	if (game === "minecraft") {
 		return await minecraftGetPlayerCount();
+	} else if (game === "ark") {
+		return await arkGetPlayerCount();
 	}
 }
 
@@ -114,9 +163,12 @@ app.delete("/control", (request, response) => {
 
 async function getGameLogs() {
 	const container = docker.getContainer(game);
-	const logs = await container.logs({stdout: true, tail: 50});
+	const logs = await container.logs({ stdout: true, tail: 50 });
 	if (game === "minecraft") {
 		return logs.toString().replace(/^(.*?)\[/gm, "["); // trim colour codes
+	}
+	if (game === "ark") {
+		return stripAnsi(logs.toString().replace(/^(.{8})/gm, ""));
 	}
 	return logs.toString();
 }

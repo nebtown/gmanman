@@ -6,6 +6,12 @@
     "icon": "icons/minecraft.png"
   },
   {
+    "name": "Ark",
+    "controlUrl": "https://gman.nebtown.info/gmanman/ark/control/",
+    "logsUrl": "https://gman.nebtown.info/gmanman/ark/logs/",
+    "icon": "icons/ark.png"
+  },
+  {
     "name": "Garry's Mod (todo)",
     "controlUrl": "https://gman.nebtown.info/gmanman/mc/test/control/?todo",
     "icon": "icons/garrysmod.png"
