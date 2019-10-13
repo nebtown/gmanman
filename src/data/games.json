@@ -12,6 +12,12 @@
     "icon": "icons/ark.png"
   },
   {
+    "name": "Factorio",
+    "controlUrl": "https://gman.nebtown.info/gmanman/factorio/control/",
+    "logsUrl": "https://gman.nebtown.info/gmanman/factorio/logs/",
+    "icon": "icons/factorio.png"
+  },
+  {
     "name": "Garry's Mod (todo)",
     "controlUrl": "https://gman.nebtown.info/gmanman/mc/test/control/?todo",
     "icon": "icons/garrysmod.png"

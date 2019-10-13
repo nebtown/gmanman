@@ -35,6 +35,8 @@ function getRconPort() {
 		return 32330;
 	} else if (game === "minecraft") {
 		return 27075;
+	} else if (game === "factorio") {
+		return 34198;
 	}
 }
 
@@ -74,14 +76,14 @@ async function minecraftGetPlayerCount() {
 async function arkGetPlayerCount() {
 	// in theory the game has rcon, but it wasn't seeming to work...
 
-	const container = docker.getContainer(game);
-	const exec = await container.exec({
-		AttachStdout: true,
-		Tty: false,
-		Cmd: ["arkmanager", "status"],
-	});
 	let response;
+	const container = docker.getContainer(game);
 	try {
+		const exec = await container.exec({
+			AttachStdout: true,
+			Tty: false,
+			Cmd: ["arkmanager", "status"],
+		});
 		response = await new Promise(async (resolve, reject) => {
 			await exec.start(async (err, stream) => {
 				if (err) return reject();
@@ -104,19 +106,38 @@ async function arkGetPlayerCount() {
 	return Number(matches[1]);
 }
 
+async function factorioGetPlayerCount() {
+	let playerList;
+	try {
+		playerList = await (await rconConnect()).send("/players");
+	} catch (e) {
+		debugLog("rcon", e.message);
+		return false;
+	}
+	const matches = playerList.match(/Players \((\d+)\):/);
+	if (!matches) {
+		console.warn("playerList: ", playerList);
+		return false;
+	}
+	return Number(matches[1]);
+}
+
 async function getPlayerCount() {
 	if (game === "minecraft") {
 		return await minecraftGetPlayerCount();
 	} else if (game === "ark") {
 		return await arkGetPlayerCount();
+	} else if (game === "factorio") {
+		return await factorioGetPlayerCount();
 	}
 }
 
 async function isContainerRunning() {
 	const container = docker.getContainer(game);
-	const containerDetails = await container.inspect();
-
-	return containerDetails.State.Running;
+	return await container
+		.inspect()
+		.then(containerDetails => containerDetails.State.Running)
+		.catch(reason => false);
 }
 
 app.get("/control", async (request, response) => {
@@ -163,11 +184,11 @@ app.delete("/control", (request, response) => {
 
 async function getGameLogs() {
 	const container = docker.getContainer(game);
-	const logs = await container.logs({ stdout: true, tail: 50 });
+	const logs = await container.logs({ stdout: true, tail: 100 });
 	if (game === "minecraft") {
 		return logs.toString().replace(/^(.*?)\[/gm, "["); // trim colour codes
 	}
-	if (game === "ark") {
+	if (game === "ark" || game === "factorio") {
 		return stripAnsi(logs.toString().replace(/^(.{8})/gm, ""));
 	}
 	return logs.toString();

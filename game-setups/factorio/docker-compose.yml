@@ -1,0 +1,10 @@
+version: '2'
+services:
+  factorio:
+    container_name: factorio
+    image: factoriotools/factorio
+    ports:
+      - "34197:34197/udp" # game
+      - "34198:27015/tcp" # rcon
+    volumes:
+      - ./volume:/factorio
