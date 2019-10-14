@@ -184,14 +184,17 @@ app.delete("/control", (request, response) => {
 
 async function getGameLogs() {
 	const container = docker.getContainer(game);
-	const logs = await container.logs({ stdout: true, tail: 100 });
+	const logs = (await container.logs({ stdout: true, tail: 100 })).toString();
 	if (game === "minecraft") {
-		return logs.toString().replace(/^(.*?)\[/gm, "["); // trim colour codes
+		return logs.replace(/^(.*?)\[/gm, "["); // trim colour codes
 	}
 	if (game === "ark" || game === "factorio") {
-		return stripAnsi(logs.toString().replace(/^(.{8})/gm, ""));
+		if (currentStatus === "updating") {
+			return logs;
+		}
+		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
 	}
-	return logs.toString();
+	return logs;
 }
 
 app.get("/logs", async (request, response) => {
@@ -200,6 +203,26 @@ app.get("/logs", async (request, response) => {
 	} catch (e) {
 		console.log("/logs: ", e);
 		response.json({});
+	}
+});
+
+app.post("/update", async (request, response) => {
+	if (game === "factorio") {
+		currentStatus = "updating";
+		docker.pull("factoriotools/factorio");
+		docker
+			.run("factoriotools/factorio", [], [], {
+				name: "factorio",
+				Entrypoint: ["./docker-update-mods.sh"],
+				HostConfig: {
+					Binds: [`${composeOptions.cwd}volume:/factorio`],
+					AutoRemove: true,
+				},
+			})
+			.then(() => {
+				currentStatus = "stopped";
+			});
+		response.json({ status: currentStatus });
 	}
 });
 

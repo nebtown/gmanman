@@ -15,6 +15,7 @@
     "name": "Factorio",
     "controlUrl": "https://gman.nebtown.info/gmanman/factorio/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/factorio/logs/",
+    "updateUrl": "https://gman.nebtown.info/gmanman/factorio/update/",
     "icon": "icons/factorio.png"
   },
   {

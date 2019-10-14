@@ -19,6 +19,7 @@ import CloudOffIcon from "@material-ui/icons/CloudOff";
 import FlightLandIcon from "@material-ui/icons/FlightLand";
 import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
 import SubjectIcon from "@material-ui/icons/Subject";
+import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
 
 import { useInterval, useMountEffect } from "../util/hooks";
 import LogViewer from "./LogViewer";
@@ -30,11 +31,18 @@ ServerCard.propTypes = {
 		"starting",
 		"running",
 		"stopping",
+		"updating",
 		"unknown",
 	]),
 };
 
-export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
+export default function ServerCard({
+	title,
+	icon,
+	controlUrl,
+	logsUrl,
+	updateUrl,
+}) {
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = React.useState(false);
@@ -60,6 +68,7 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 		if (
 			status === "starting" ||
 			status === "stopping" ||
+			status === "updating" ||
 			status === "unknown"
 		) {
 			pollStatus();
@@ -70,7 +79,12 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 			return;
 		}
 		if (
-			!(status === "starting" || status === "stopping" || status === "unknown")
+			!(
+				status === "starting" ||
+				status === "stopping" ||
+				status === "updating" ||
+				status === "unknown"
+			)
 		) {
 			pollStatus();
 		}
@@ -86,7 +100,9 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 		const {
 			data: { logs: newLogs },
 		} = await axios.get(logsUrl);
-		setLogLines(newLogs);
+		if (newLogs) {
+			setLogLines(newLogs);
+		}
 	}, 2000);
 
 	const statusIcon =
@@ -98,6 +114,8 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 			<CheckCircleOutlineIcon style={{ color: "green" }} />
 		) : status === "stopping" ? (
 			<FlightLandIcon style={{ color: "red" }} />
+		) : status === "updating" ? (
+			<UpdateIcon style={{ color: "orange" }} />
 		) : (
 			<DeviceUnknownIcon />
 		);
@@ -110,10 +128,12 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 			? "Online"
 			: status === "stopping"
 			? "Stopping"
+			: status === "updating"
+			? "Updating"
 			: "Status Unknown";
 	return (
 		<Card
-			raised={["starting", "running", "stopping"].includes(status)}
+			raised={["starting", "running", "stopping", "updating"].includes(status)}
 			className="game-card"
 		>
 			<CardHeader title={title} />
@@ -170,6 +190,20 @@ export default function ServerCard({ title, icon, controlUrl, logsUrl }) {
 						}}
 					>
 						<SubjectIcon /> Logs
+					</Button>
+				)}
+				{updateUrl && (
+					<Button
+						size="small"
+						disabled={status !== "stopped"}
+						onClick={async () => {
+							const {
+								data: { status: newStatus },
+							} = await axios.post(updateUrl);
+							setStatus(newStatus);
+						}}
+					>
+						<UpdateIcon classes={{ root: "margin-right-2" }} /> Update
 					</Button>
 				)}
 			</CardActions>

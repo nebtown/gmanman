@@ -22,6 +22,7 @@ export default () => {
 						name
 						controlUrl
 						logsUrl
+						updateUrl
 						icon
 					}
 				}
