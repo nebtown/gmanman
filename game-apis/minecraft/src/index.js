@@ -8,8 +8,9 @@ const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
 const docker = new (require("dockerode"))();
 
+const gameDir = argv.dir ? path.join(argv.dir) : path.join(__dirname, "../");
 const composeOptions = {
-	cwd: argv.dir ? path.join(argv.dir) : path.join(__dirname, "../"),
+	cwd: gameDir,
 };
 
 const game = argv.game || "minecraft";
@@ -54,6 +55,15 @@ async function rconConnect() {
 }
 
 let currentStatus = "unknown";
+function setStatus(newStatus) {
+	currentStatus = newStatus;
+}
+
+let gameManager;
+if (game === "space-engineers") {
+	const Manager = require("./space-engineers");
+	gameManager = new Manager({ setStatus, gameDir, debugLog });
+}
 
 async function minecraftGetPlayerCount() {
 	let playerList;
@@ -123,6 +133,9 @@ async function factorioGetPlayerCount() {
 }
 
 async function getPlayerCount() {
+	if (gameManager) {
+		return await gameManager.getPlayerCount();
+	}
 	if (game === "minecraft") {
 		return await minecraftGetPlayerCount();
 	} else if (game === "ark") {
@@ -133,6 +146,9 @@ async function getPlayerCount() {
 }
 
 async function isContainerRunning() {
+	if (gameManager) {
+		return await gameManager.isProcessRunning();
+	}
 	const container = docker.getContainer(game);
 	return await container
 		.inspect()
@@ -170,19 +186,34 @@ app.get("/control", async (request, response) => {
 app.put("/control", (request, response) => {
 	if (["stopped", "unknown"].includes(currentStatus)) {
 		currentStatus = "starting";
-		compose.upAll(composeOptions);
+		if (gameManager) {
+			gameManager.start();
+		} else {
+			compose.upAll(composeOptions);
+		}
 	}
 	response.json({ status: currentStatus });
 });
 app.delete("/control", (request, response) => {
 	if (["starting", "running", "unknown"].includes(currentStatus)) {
 		currentStatus = "stopping";
-		compose.stop(composeOptions);
+		if (gameManager) {
+			gameManager.stop();
+		} else {
+			compose.stop(composeOptions);
+		}
 	}
 	response.json({ status: currentStatus });
 });
 
 async function getGameLogs() {
+	if (gameManager) {
+		const managerLogs = gameManager.logs();
+		return managerLogs
+			.split(/\n/g)
+			.slice(-100)
+			.join("\n");
+	}
 	const container = docker.getContainer(game);
 	const logs = (await container.logs({ stdout: true, tail: 100 })).toString();
 	if (game === "minecraft") {

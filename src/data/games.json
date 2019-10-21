@@ -19,6 +19,12 @@
     "icon": "icons/factorio.png"
   },
   {
+    "name": "Space Engineers",
+    "controlUrl": "https://gman.nebtown.info/gmanman/space-engineers/control/",
+    "logsUrl": "https://gman.nebtown.info/gmanman/space-engineers/logs/",
+    "icon": "icons/space-engineers.png"
+  },
+  {
     "name": "Garry's Mod (todo)",
     "controlUrl": "https://gman.nebtown.info/gmanman/mc/test/control/?todo",
     "icon": "icons/garrysmod.png"

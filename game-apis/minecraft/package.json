@@ -11,6 +11,7 @@
     "docker-compose": "^0.22.2",
     "dockerode": "^3.0.1",
     "express": "^4.17.1",
+    "gamedig": "^2.0.16",
     "minimist": "^1.2.0",
     "modern-rcon": "^1.0.3",
     "strip-ansi": "^5.2.0"
