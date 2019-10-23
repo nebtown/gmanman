@@ -19,6 +19,13 @@
     "icon": "icons/factorio.png"
   },
   {
+    "name": "Factorio Angelbob",
+    "controlUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/control/",
+    "logsUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/logs/",
+    "updateUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/update/",
+    "icon": "icons/factorio.png"
+  },
+  {
     "name": "Space Engineers",
     "controlUrl": "https://gman.nebtown.info/gmanman/space-engineers/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/space-engineers/logs/",
