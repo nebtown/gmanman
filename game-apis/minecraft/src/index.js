@@ -1,19 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
-const stripAnsi = require("strip-ansi");
-const argv = require("minimist")(process.argv.slice(2));
 const app = express();
-const compose = require("docker-compose");
-const Rcon = require("modern-rcon");
-const docker = new (require("dockerode"))();
 
-const gameDir = argv.dir ? path.join(argv.dir) : path.join(__dirname, "../");
-const composeOptions = {
-	cwd: gameDir,
-};
-
-const game = argv.game || "minecraft";
+const { game, argv, debugLog, listenPort } = require("./cliArgs");
 
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
@@ -25,140 +14,22 @@ app.get("/", (request, response) => {
 	response.json({});
 });
 
-function debugLog(...args) {
-	if (argv.v) {
-		console.log(...args);
-	}
-}
-
-function getRconPort() {
-	if (game === "ark") {
-		return 32330;
-	} else if (game === "minecraft") {
-		return 27075;
-	} else if (game === "factorio") {
-		return 34198;
-	}
-}
-
-async function rconConnect() {
-	if (!this.rcon || !this.rcon.hasAuthed) {
-		this.rcon = new Rcon(
-			"localhost",
-			getRconPort(),
-			argv.rconPassword || "",
-			500
-		);
-		await this.rcon.connect();
-	}
-	return this.rcon;
-}
-
 let currentStatus = "unknown";
 function setStatus(newStatus) {
 	currentStatus = newStatus;
 }
-
-let gameManager;
-if (game === "space-engineers") {
-	const Manager = require("./space-engineers");
-	gameManager = new Manager({ setStatus, gameDir, debugLog });
+function getCurrentStatus() {
+	return currentStatus;
 }
 
-async function minecraftGetPlayerCount() {
-	let playerList;
-	try {
-		playerList = await (await rconConnect()).send("list");
-	} catch (e) {
-		debugLog("rcon", e.message);
-		return false;
-	}
-	const matches = playerList.match(
-		/There are (\d+) of a max \d+ players online:/
-	);
-	if (!matches) {
-		console.warn("playerList: ", playerList);
-		return false;
-	}
-	return Number(matches[1]);
-}
-
-async function arkGetPlayerCount() {
-	// in theory the game has rcon, but it wasn't seeming to work...
-
-	let response;
-	const container = docker.getContainer(game);
-	try {
-		const exec = await container.exec({
-			AttachStdout: true,
-			Tty: false,
-			Cmd: ["arkmanager", "status"],
-		});
-		response = await new Promise(async (resolve, reject) => {
-			await exec.start(async (err, stream) => {
-				if (err) return reject();
-				let message = "";
-				stream.on("data", data => (message += data.toString()));
-				stream.on("end", () => resolve(message));
-			});
-		});
-	} catch (e) {
-		debugLog("arkmanager status exception", e.message);
-		return false;
-	}
-	debugLog("arkmanager status", response);
-
-	const matches = response.match(/Active Players: (\d+)/);
-	if (!matches) {
-		console.warn("playerList: ", response);
-		return false;
-	}
-	return Number(matches[1]);
-}
-
-async function factorioGetPlayerCount() {
-	let playerList;
-	try {
-		playerList = await (await rconConnect()).send("/players");
-	} catch (e) {
-		debugLog("rcon", e.message);
-		return false;
-	}
-	const matches = playerList.match(/Players \((\d+)\):/);
-	if (!matches) {
-		console.warn("playerList: ", playerList);
-		return false;
-	}
-	return Number(matches[1]);
-}
-
-async function getPlayerCount() {
-	if (gameManager) {
-		return await gameManager.getPlayerCount();
-	}
-	if (game === "minecraft") {
-		return await minecraftGetPlayerCount();
-	} else if (game === "ark") {
-		return await arkGetPlayerCount();
-	} else if (game === "factorio") {
-		return await factorioGetPlayerCount();
-	}
-}
-
-async function isContainerRunning() {
-	if (gameManager) {
-		return await gameManager.isProcessRunning();
-	}
-	const container = docker.getContainer(game);
-	return await container
-		.inspect()
-		.then(containerDetails => containerDetails.State.Running)
-		.catch(reason => false);
-}
+const gameManager = new (require("./" + game))({
+	getCurrentStatus,
+	setStatus,
+});
 
 app.get("/control", async (request, response) => {
 	if (["unknown", "starting", "running"].includes(currentStatus)) {
-		let playerCount = await getPlayerCount();
+		let playerCount = await gameManager.getPlayerCount();
 		if (playerCount !== false) {
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
@@ -168,12 +39,14 @@ app.get("/control", async (request, response) => {
 		}
 	}
 	if ("unknown" === currentStatus) {
-		currentStatus = (await isContainerRunning()) ? "starting" : "stopped";
+		currentStatus = (await gameManager.isProcessRunning())
+			? "starting"
+			: "stopped";
 		debugLog("was unknown, now", currentStatus);
 		return response.json({ status: currentStatus });
 	}
 	if ("stopping" === currentStatus) {
-		if (!(await isContainerRunning())) {
+		if (!(await gameManager.isProcessRunning())) {
 			debugLog("was stopping, now stopped");
 			currentStatus = "stopped";
 			return response.json({ status: currentStatus });
@@ -186,51 +59,25 @@ app.get("/control", async (request, response) => {
 app.put("/control", (request, response) => {
 	if (["stopped", "unknown"].includes(currentStatus)) {
 		currentStatus = "starting";
-		if (gameManager) {
-			gameManager.start();
-		} else {
-			compose.upAll(composeOptions);
-		}
+		gameManager.start();
 	}
 	response.json({ status: currentStatus });
 });
 app.delete("/control", (request, response) => {
 	if (["starting", "running", "unknown"].includes(currentStatus)) {
 		currentStatus = "stopping";
-		if (gameManager) {
-			gameManager.stop();
-		} else {
-			compose.stop(composeOptions);
-		}
+		gameManager.stop();
 	}
 	response.json({ status: currentStatus });
 });
-
-async function getGameLogs() {
-	if (gameManager) {
-		const managerLogs = gameManager.logs();
-		return managerLogs
-			.split(/\n/g)
-			.slice(-100)
-			.join("\n");
-	}
-	const container = docker.getContainer(game);
-	const logs = (await container.logs({ stdout: true, tail: 100 })).toString();
-	if (game === "minecraft") {
-		return logs.replace(/^(.*?)\[/gm, "["); // trim colour codes
-	}
-	if (game === "ark" || game === "factorio") {
-		if (currentStatus === "updating") {
-			return logs;
-		}
-		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
-	}
-	return logs;
-}
-
 app.get("/logs", async (request, response) => {
 	try {
-		response.json({ logs: await getGameLogs() });
+		response.json({
+			logs: (await gameManager.logs())
+				.split(/\n/g)
+				.slice(-100)
+				.join("\n"),
+		});
 	} catch (e) {
 		console.log("/logs: ", e);
 		response.json({});
@@ -238,21 +85,9 @@ app.get("/logs", async (request, response) => {
 });
 
 app.post("/update", async (request, response) => {
-	if (game === "factorio") {
+	if (gameManager.update) {
 		currentStatus = "updating";
-		docker.pull("factoriotools/factorio");
-		docker
-			.run("factoriotools/factorio", [], [], {
-				name: "factorio",
-				Entrypoint: ["./docker-update-mods.sh"],
-				HostConfig: {
-					Binds: [`${composeOptions.cwd}volume:/factorio`],
-					AutoRemove: true,
-				},
-			})
-			.then(() => {
-				currentStatus = "stopped";
-			});
+		gameManager.update();
 		response.json({ status: currentStatus });
 	}
 });
@@ -275,6 +110,5 @@ app.delete("/test/control", (request, response) => {
 	response.json({ status: statusSimulated });
 });
 
-const port = argv.port || 725;
-app.listen(port);
-console.log(`Listening on port ${port}`);
+app.listen(listenPort);
+console.log(`Listening on port ${listenPort}`);

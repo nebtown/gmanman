@@ -1,24 +1,24 @@
 const gamedig = require("gamedig");
 const { spawn: spawnProcess } = require("child_process");
 
+const { gameDir, debugLog } = require("./cliArgs");
+
 module.exports = class SpaceEngineersManager {
-	constructor({ setStatus, gameDir, debugLog }) {
+	constructor({ setStatus }) {
 		this.setStatus = setStatus;
-		this.gameDir = gameDir;
-		this.debugLog = debugLog;
 		this.logData = "";
 	}
 	start() {
 		this.logData += "\n\n\nLaunching...\n";
-		this.process = spawnProcess(path.join(this.gameDir, "Torch.Server.exe"));
+		this.process = spawnProcess(path.join(gameDir, "Torch.Server.exe"));
 		this.process.stdout.on("data", data => {
 			let text = data.toString().trim();
-			this.debugLog(text);
+			debugLog(text);
 			this.logData += text + "\n";
 		});
 		this.process.stderr.on("data", data => {
 			let text = data.toString().trim();
-			this.debugLog(text);
+			debugLog(text);
 			this.logData += text + "\n";
 		});
 		this.process.on("close", (code, signal) => {
@@ -40,11 +40,11 @@ module.exports = class SpaceEngineersManager {
 			});
 			return state.players.length;
 		} catch (e) {
-			this.debugLog("gamedig", e.message);
+			debugLog("gamedig", e.message);
 			return false;
 		}
 	}
-	logs() {
+	async logs() {
 		return this.logData;
 	}
-}
+};
