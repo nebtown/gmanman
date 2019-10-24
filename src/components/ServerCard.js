@@ -18,6 +18,7 @@ import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 import CloudOffIcon from "@material-ui/icons/CloudOff";
 import FlightLandIcon from "@material-ui/icons/FlightLand";
 import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
+import PowerIcon from "@material-ui/icons/Power";
 import SubjectIcon from "@material-ui/icons/Subject";
 import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
 
@@ -42,6 +43,7 @@ export default function ServerCard({
 	controlUrl,
 	logsUrl,
 	updateUrl,
+	connectIp,
 }) {
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
@@ -144,12 +146,27 @@ export default function ServerCard({
 							<Img fixed={icon} className="game-icon" fadeIn={false} />
 						</Grid>
 					)}
-					<Grid item>{statusIcon}</Grid>
 					<Grid item>
-						{statusMessage}
-						{status === "running" &&
-							numPlayers !== -1 &&
-							` with ${numPlayers} players`}
+						<Grid container direction="column" alignItems="center">
+							<Grid item>
+								<Grid container direction="row" alignItems="center" spacing={1}>
+									<Grid item>{statusIcon}</Grid>
+									<Grid item>
+										{statusMessage}
+										{status === "running" &&
+											numPlayers !== -1 &&
+											` with ${numPlayers} players`}
+									</Grid>
+								</Grid>
+							</Grid>
+							{connectIp && status === "running" && (
+								<Grid item>
+									<Button href={`steam://connect/${connectIp}`}>
+										<PowerIcon style={{ color: "green" }} /> Connect
+									</Button>
+								</Grid>
+							)}
+						</Grid>
 					</Grid>
 				</Grid>
 			</CardContent>

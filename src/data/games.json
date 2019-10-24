@@ -9,6 +9,7 @@
     "name": "Ark",
     "controlUrl": "https://gman.nebtown.info/gmanman/ark/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/ark/logs/",
+    "connectIp": "gman.nebtown.info:27015",
     "icon": "icons/ark.png"
   },
   {
@@ -16,6 +17,7 @@
     "controlUrl": "https://gman.nebtown.info/gmanman/factorio/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/factorio/logs/",
     "updateUrl": "https://gman.nebtown.info/gmanman/factorio/update/",
+    "connectIp": "gman.nebtown.info:34197",
     "icon": "icons/factorio.png"
   },
   {
@@ -23,12 +25,14 @@
     "controlUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/logs/",
     "updateUrl": "https://gman.nebtown.info/gmanman/factorio-angelbob/update/",
+    "connectIp": "gman.nebtown.info:34197",
     "icon": "icons/factorio.png"
   },
   {
     "name": "Space Engineers",
     "controlUrl": "https://gman.nebtown.info/gmanman/space-engineers/control/",
     "logsUrl": "https://gman.nebtown.info/gmanman/space-engineers/logs/",
+    "connectIp": "gman.nebtown.info:29016",
     "icon": "icons/space-engineers.png"
   },
   {
