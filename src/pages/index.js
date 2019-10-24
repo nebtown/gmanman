@@ -7,6 +7,17 @@ import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import ServerCard from "../components/ServerCard";
 
+const titleOptions = [
+	"GmanMan 2: Eclectic Boogaloo",
+	"GmanMan: mostly functional",
+	"GmanMan: sew much more than a fabric store",
+	"GmanMan and other ores",
+];
+
+function generatePageTitle() {
+	return titleOptions[Math.floor(Math.random() * titleOptions.length)];
+}
+
 export default () => {
 	const {
 		allGamesJson: { nodes: games },
@@ -48,6 +59,7 @@ export default () => {
 	return (
 		<Container>
 			<Helmet>
+				<title>{generatePageTitle()}</title>
 				<link
 					rel="stylesheet"
 					href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"

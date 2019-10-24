@@ -30,6 +30,7 @@ module.exports = {
 			},
 		},
 		`gatsby-plugin-react-helmet`,
+		`gatsby-plugin-favicon`,
 		`gatsby-transformer-sharp`,
 		`gatsby-plugin-sharp`,
 	],
