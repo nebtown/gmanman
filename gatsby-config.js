@@ -2,7 +2,6 @@ module.exports = {
 	siteMetadata: {
 		title: "Gman Server Manager",
 	},
-	pathPrefix: "/gmanman",
 	plugins: [
 		{
 			resolve: `gatsby-plugin-material-ui`,

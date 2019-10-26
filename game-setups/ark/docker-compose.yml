@@ -9,19 +9,19 @@ services:
       - SERVERMAP=${SERVERMAP:-TheIsland}
       - SAVEDIRECTORY=${SAVEDIRECTORY:-SavedArks}
       - MAX_PLAYERS=12
-      - SERVERPASSWORD=""
-      - ADMINPASSWORD=${ADMINPASSWORD:-""}
+      - SERVERPASSWORD=
+      - ADMINPASSWORD=${ADMINPASSWORD:-}
       - SERVERPORT=27015
       - STEAMPORT=7778
       - BACKUPONSTART=1
       - BACKUPONSTOP=1
       - WARNONSTOP=1
-      - UPDATEONSTART=1
+      - UPDATEONSTART=${UPDATEONSTART:-1}
       - TZ=UTC
       - ARK_GID=1000
       - ARK_UID=1000
     volumes:
-      - ./ark-volume:/ark
+      - ./volume:/ark
       - ./Saved:/ark/server/ShooterGame/Saved
     ports:
       - 7778:7778/udp
