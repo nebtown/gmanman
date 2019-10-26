@@ -34,6 +34,7 @@ export default () => {
 						controlUrl
 						logsUrl
 						updateUrl
+						modsUrl
 						connectIp
 						icon
 					}

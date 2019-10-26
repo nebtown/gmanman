@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 
@@ -41,5 +43,40 @@ module.exports = class FactorioManager extends CommonDockerGameManager {
 			.then(() => {
 				this.setStatus("stopped");
 			});
+	}
+	getMods() {
+		try {
+			const modListText = fs.readFileSync(
+				path.join(gameDir, "volume", "mods", "mod-list.json")
+			);
+			return JSON.parse(modListText)
+				.mods.filter(({ name }) => name !== "base")
+				.map(({ name, enabled }) => ({
+					id: name,
+					enabled,
+				}));
+		} catch (e) {
+			console.error("getMods error: ", e);
+			return [];
+		}
+	}
+	setMods(modsList) {
+		try {
+			fs.writeFileSync(
+				path.join(gameDir, "volume", "mods", "mod-list.json"),
+				JSON.stringify({
+					mods: [...modsList, { id: "base", enabled: true }].map(
+						({ id, enabled }) => ({
+							name: id,
+							enabled,
+						})
+					),
+				})
+			);
+			return true;
+		} catch (e) {
+			console.error("setMods error: ", e);
+			return false;
+		}
 	}
 };

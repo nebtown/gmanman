@@ -16,6 +16,7 @@ import StopIcon from "@material-ui/icons/Stop";
 import DeviceUnknownIcon from "@material-ui/icons/DeviceUnknown";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 import CloudOffIcon from "@material-ui/icons/CloudOff";
+import ExtensionIcon from "@material-ui/icons/Extension";
 import FlightLandIcon from "@material-ui/icons/FlightLand";
 import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
 import PowerIcon from "@material-ui/icons/Power";
@@ -24,6 +25,7 @@ import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
 
 import { useInterval, useMountEffect } from "../util/hooks";
 import LogViewer from "./LogViewer";
+import ModsViewer from "./ModsViewer";
 
 ServerCard.propTypes = {
 	title: PropTypes.string.isRequired,
@@ -43,12 +45,14 @@ export default function ServerCard({
 	controlUrl,
 	logsUrl,
 	updateUrl,
+	modsUrl,
 	connectIp,
 }) {
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = React.useState(false);
 	const [logLines, setLogLines] = React.useState("");
+	const [modsOpen, setModsOpen] = React.useState(false);
 
 	const pollStatus = async () => {
 		if (!controlUrl) {
@@ -171,30 +175,32 @@ export default function ServerCard({
 				</Grid>
 			</CardContent>
 			<CardActions>
-				<Button
-					color="primary"
-					disabled={status !== "stopped" && status !== "unknown"}
-					onClick={async () => {
-						const {
-							data: { status: newStatus },
-						} = await axios.put(controlUrl);
-						setStatus(newStatus);
-					}}
-				>
-					<StartIcon /> Start
-				</Button>
-				<Button
-					color="secondary"
-					disabled={status !== "starting" && status !== "running"}
-					onClick={async () => {
-						const {
-							data: { status: newStatus },
-						} = await axios.delete(controlUrl);
-						setStatus(newStatus);
-					}}
-				>
-					<StopIcon /> Stop
-				</Button>
+				{(status === "stopped" || status === "unknown") && (
+					<Button
+						color="primary"
+						onClick={async () => {
+							const {
+								data: { status: newStatus },
+							} = await axios.put(controlUrl);
+							setStatus(newStatus);
+						}}
+					>
+						<StartIcon /> Start
+					</Button>
+				)}
+				{(status === "starting" || status === "running") && (
+					<Button
+						color="secondary"
+						onClick={async () => {
+							const {
+								data: { status: newStatus },
+							} = await axios.delete(controlUrl);
+							setStatus(newStatus);
+						}}
+					>
+						<StopIcon /> Stop
+					</Button>
+				)}
 				{logsUrl && (
 					<Button
 						size="small"
@@ -223,13 +229,34 @@ export default function ServerCard({
 						<UpdateIcon classes={{ root: "margin-right-2" }} /> Update
 					</Button>
 				)}
+				{modsUrl && (
+					<Button
+						size="small"
+						disabled={status !== "stopped"}
+						onClick={() => {
+							setModsOpen(true);
+						}}
+					>
+						<ExtensionIcon classes={{ root: "margin-right-2" }} /> Mods
+					</Button>
+				)}
 			</CardActions>
-			<LogViewer
-				title={title}
-				open={logOpen}
-				setOpen={setLogOpen}
-				logLines={logLines}
-			/>
+			{logsUrl && (
+				<LogViewer
+					title={title}
+					open={logOpen}
+					setOpen={setLogOpen}
+					logLines={logLines}
+				/>
+			)}
+			{modsUrl && (
+				<ModsViewer
+					title={title}
+					modsUrl={modsUrl}
+					open={modsOpen}
+					setOpen={setModsOpen}
+				/>
+			)}
 		</Card>
 	);
 }

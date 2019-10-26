@@ -17,6 +17,7 @@
     "controlUrl": "https://gmanman.nebtown.info/factorio/control/",
     "logsUrl": "https://gmanman.nebtown.info/factorio/logs/",
     "updateUrl": "https://gmanman.nebtown.info/factorio/update/",
+    "modsUrl": "https://gmanman.nebtown.info/factorio/mods/",
     "connectIp": "gman.nebtown.info:34197",
     "icon": "icons/factorio.png"
   },
@@ -25,6 +26,7 @@
     "controlUrl": "https://gmanman.nebtown.info/factorio-angelbob/control/",
     "logsUrl": "https://gmanman.nebtown.info/factorio-angelbob/logs/",
     "updateUrl": "https://gmanman.nebtown.info/factorio-angelbob/update/",
+    "modsUrl": "https://gmanman.nebtown.info/factorio-angelbob/mods/",
     "connectIp": "gman.nebtown.info:34197",
     "icon": "icons/factorio.png"
   },

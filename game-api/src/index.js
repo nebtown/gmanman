@@ -4,6 +4,7 @@ const app = express();
 
 const { game, argv, debugLog, listenPort } = require("./cliArgs");
 
+app.use(express.json());
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
 	console.log(`- ${request.method} ${request.originalUrl}`);
@@ -92,6 +93,21 @@ app.post("/update", async (request, response) => {
 	}
 });
 
+app.get("/mods", async (request, response) => {
+	if (gameManager.getMods) {
+		response.json({ mods: gameManager.getMods() });
+	}
+});
+app.put("/mods", async (request, response) => {
+	if (gameManager.setMods) {
+		if (gameManager.setMods(request.body.mods)) {
+			response.json({});
+		} else {
+			throw new Error("Failed setting mods");
+		}
+	}
+});
+
 let statusSimulated = "stopped";
 app.get("/test/control", (request, response) => {
 	if (statusSimulated === "starting") {
@@ -99,7 +115,7 @@ app.get("/test/control", (request, response) => {
 	} else if (statusSimulated === "stopping") {
 		statusSimulated = "stopped";
 	}
-	response.json({ status: statusSimulated });
+	response.json({ status: statusSimulated, playerCount: 0 });
 });
 app.put("/test/control", (request, response) => {
 	statusSimulated = "starting";
