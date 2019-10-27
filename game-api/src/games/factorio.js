@@ -80,6 +80,11 @@ module.exports = class FactorioManager extends CommonDockerGameManager {
 		}
 	}
 	filesToBackup() {
-		return [path.join(gameDir, "volume/saves")];
+		return [
+			path.join(gameDir, "volume", "saves"),
+			path.join(gameDir, "volume", "config"),
+			path.join(gameDir, "volume", "mods", "mod-list.json"),
+			path.join(gameDir, "volume", "mods", "mod-settings.dat"),
+		];
 	}
 };

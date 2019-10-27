@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const gcs = require("./libjunkdrawer/gcs");
-const sevenzip = require('node-7z');
+const sevenzip = require("node-7z");
 const app = express();
 
 const { game, gameDir, argv, debugLog, listenPort } = require("./cliArgs");
@@ -31,41 +31,41 @@ const gameManager = new (require("./games/" + game))({
 });
 
 app.get("/backup", async (request, response) => {
+	if (!gameManager.filesToBackup) {
+		return response.json({
+			ok: false,
+			message: "game does not support backups",
+		});
+	}
 	if (await gameManager.isProcessRunning()) {
-		return response.json({"ok": false, "message": "game is running"});
+		return response.json({ ok: false, message: "game is running" });
 	}
 
-	const d = new Date();
-	const backupFile = game + "-backup-" + d.toISOString() + ".7z";
-
-	const stream = sevenzip.add(
-		backupFile,
-		gameManager.filesToBackup(),
-		{
-			"timeStats": true,
-			"workingDir": gameDir,
-		},
-	);
+	const backupFile = `${game}-backup-${new Date().toISOString()}.7z`;
+	const stream = sevenzip.add(backupFile, gameManager.filesToBackup(), {
+		timeStats: true,
+		workingDir: gameDir,
+	});
 
 	const promise = new Promise((resolve, reject) => {
-		stream.on('end', async function () {
-			const uploadErr = await gcs.uploadFile(game, backupFile);
-			if (uploadErr == null) {
-				resolve({"ok": true})
-			} else {
-				console.warn(uploadErr);
-				resolve({"ok": false, "error": uploadErr});
+		stream.on("end", async function() {
+			try {
+				await gcs.uploadFile(game, backupFile);
+				resolve({ ok: true });
+			} catch (uploadErr) {
+				console.warn("Backup Upload ", uploadErr);
+				resolve({ ok: false, error: uploadErr.message });
 			}
 		});
 
-		stream.on('error', (err) => reject({"ok": false, "error": err}))
+		stream.on("error", err => reject({ ok: false, error: err }));
 	});
 
 	try {
-		response.json(await promise)
+		response.json(await promise);
 	} catch (err) {
 		console.warn(err);
-		response.json(err)
+		response.json(err);
 	}
 });
 
