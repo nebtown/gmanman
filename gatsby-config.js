@@ -17,20 +17,11 @@ module.exports = {
 		{
 			resolve: `gatsby-source-filesystem`,
 			options: {
-				name: `srcData`,
-				path: `${__dirname}/src/data/`,
-			},
-		},
-		{
-			resolve: `gatsby-source-filesystem`,
-			options: {
 				name: `static`,
 				path: `${__dirname}/static/`,
 			},
 		},
 		`gatsby-plugin-react-helmet`,
 		`gatsby-plugin-favicon`,
-		`gatsby-transformer-sharp`,
-		`gatsby-plugin-sharp`,
 	],
 };

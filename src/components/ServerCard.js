@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
-import Img from "gatsby-image";
 
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
@@ -9,6 +8,7 @@ import CardContent from "@material-ui/core/CardContent";
 import CardHeader from "@material-ui/core/CardHeader";
 
 import Button from "@material-ui/core/Button";
+import CardMedia from "@material-ui/core/CardMedia";
 import Grid from "@material-ui/core/Grid";
 
 import StartIcon from "@material-ui/icons/PlayArrow";
@@ -40,14 +40,22 @@ ServerCard.propTypes = {
 };
 
 export default function ServerCard({
+	game,
+	id,
 	title,
 	icon,
-	controlUrl,
-	logsUrl,
-	updateUrl,
-	modsUrl,
-	connectIp,
+	baseUrl,
+	features,
+	connectUrl,
 }) {
+	const supportsLogs = features.includes("logs");
+	const supportsUpdate = features.includes("update");
+	const supportsMods = features.includes("mods");
+	const controlUrl = baseUrl + "control/";
+	const logsUrl = baseUrl + "logs/";
+	const updateUrl = baseUrl + "update/";
+	const modsUrl = baseUrl + "mods/";
+
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = React.useState(false);
@@ -55,10 +63,6 @@ export default function ServerCard({
 	const [modsOpen, setModsOpen] = React.useState(false);
 
 	const pollStatus = async () => {
-		if (!controlUrl) {
-			console.warn(`Cannot poll ${title}, missing controlUrl`);
-			return;
-		}
 		try {
 			const {
 				data: { status: newStatus, playerCount: newNumPlayers },
@@ -147,7 +151,7 @@ export default function ServerCard({
 				<Grid container direction="row" alignItems="center" spacing={1}>
 					{icon && (
 						<Grid item>
-							<Img fixed={icon} className="game-icon" fadeIn={false} />
+							<CardMedia image={icon} className="game-icon" />
 						</Grid>
 					)}
 					<Grid item>
@@ -163,9 +167,9 @@ export default function ServerCard({
 									</Grid>
 								</Grid>
 							</Grid>
-							{connectIp && status === "running" && (
+							{connectUrl && status === "running" && (
 								<Grid item>
-									<Button href={`steam://connect/${connectIp}`}>
+									<Button href={connectUrl}>
 										<PowerIcon style={{ color: "green" }} /> Connect
 									</Button>
 								</Grid>
@@ -201,7 +205,7 @@ export default function ServerCard({
 						<StopIcon /> Stop
 					</Button>
 				)}
-				{logsUrl && (
+				{supportsLogs && (
 					<Button
 						size="small"
 						onClick={async () => {
@@ -215,7 +219,7 @@ export default function ServerCard({
 						<SubjectIcon /> Logs
 					</Button>
 				)}
-				{updateUrl && (
+				{supportsUpdate && (
 					<Button
 						size="small"
 						disabled={status !== "stopped"}
@@ -229,7 +233,7 @@ export default function ServerCard({
 						<UpdateIcon classes={{ root: "margin-right-2" }} /> Update
 					</Button>
 				)}
-				{modsUrl && (
+				{supportsMods && (
 					<Button
 						size="small"
 						disabled={status !== "stopped"}
@@ -241,7 +245,7 @@ export default function ServerCard({
 					</Button>
 				)}
 			</CardActions>
-			{logsUrl && (
+			{supportsLogs && (
 				<LogViewer
 					title={title}
 					open={logOpen}
@@ -249,7 +253,7 @@ export default function ServerCard({
 					logLines={logLines}
 				/>
 			)}
-			{modsUrl && (
+			{supportsMods && (
 				<ModsViewer
 					title={title}
 					modsUrl={modsUrl}

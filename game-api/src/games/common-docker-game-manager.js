@@ -30,7 +30,12 @@ module.exports = class CommonDockerGameManager {
 	}
 	async logs() {
 		const container = docker.getContainer(game);
-		return (await container.logs({ stdout: true, tail: 100 })).toString();
+		try {
+			return (await container.logs({ stdout: true, tail: 100 })).toString();
+		} catch (err) {
+			console.warn("logs:", err.message);
+			return "";
+		}
 	}
 	async rconConnect(port) {
 		if (!this.rcon || !this.rcon.hasAuthed) {

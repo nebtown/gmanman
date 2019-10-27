@@ -2,9 +2,19 @@ const express = require("express");
 const cors = require("cors");
 const gcs = require("./libjunkdrawer/gcs");
 const sevenzip = require("node-7z");
+const axios = require("axios");
 const app = express();
 
-const { game, gameDir, argv, debugLog, listenPort } = require("./cliArgs");
+const {
+	game,
+	gameId,
+	gameName,
+	gameDir,
+	urlRoot,
+	debugLog,
+	listenPort,
+	gatewayUrl,
+} = require("./cliArgs");
 
 app.use(express.json());
 app.use(cors()); // enable CORS on all routes
@@ -149,23 +159,27 @@ app.put("/mods", async (request, response) => {
 	}
 });
 
-let statusSimulated = "stopped";
-app.get("/test/control", (request, response) => {
-	if (statusSimulated === "starting") {
-		statusSimulated = "running";
-	} else if (statusSimulated === "stopping") {
-		statusSimulated = "stopped";
-	}
-	response.json({ status: statusSimulated, playerCount: 0 });
-});
-app.put("/test/control", (request, response) => {
-	statusSimulated = "starting";
-	response.json({ status: statusSimulated });
-});
-app.delete("/test/control", (request, response) => {
-	statusSimulated = "stopping";
-	response.json({ status: statusSimulated });
-});
-
 app.listen(listenPort);
 console.log(`Listening on port ${listenPort}`);
+
+function registerWithGateway() {
+	return axios
+		.post(gatewayUrl, {
+			game,
+			id: gameId,
+			name: gameName,
+			url: urlRoot,
+			connectUrl: gameManager.getConnectUrl && gameManager.getConnectUrl(),
+			features: [
+				gameManager.logs && "logs",
+				gameManager.getMods && "mods",
+				gameManager.update && "update",
+				gameManager.filesToBackup && "backup",
+			].filter(Boolean),
+		})
+		.catch(err => console.error("Failed to register with Gateway", err));
+}
+registerWithGateway().then(({ data }) =>
+	console.log("Registered with Gateway", data)
+);
+setInterval(registerWithGateway, 60 * 1000);

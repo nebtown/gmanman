@@ -1,12 +1,15 @@
 const gamedig = require("gamedig");
 const { spawn: spawnProcess } = require("child_process");
 
-const { gameDir, debugLog } = require("../cliArgs");
+const { gameDir, debugLog, connectUrl } = require("../cliArgs");
 
 module.exports = class SpaceEngineersManager {
 	constructor({ setStatus }) {
 		this.setStatus = setStatus;
 		this.logData = "";
+	}
+	getConnectUrl() {
+		return `steam://connect/${connectUrl || "gman.nebtown.info:29016"}`;
 	}
 	start() {
 		this.logData += "\n\n\nLaunching...\n";

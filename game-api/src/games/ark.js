@@ -1,10 +1,13 @@
 const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 
-const { game, debugLog } = require("../cliArgs");
+const { game, debugLog, connectUrl } = require("../cliArgs");
 const CommonDockerGameManager = require("./common-docker-game-manager");
 
 module.exports = class ArkManager extends CommonDockerGameManager {
+	getConnectUrl() {
+		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
+	}
 	async getPlayerCount() {
 		// in theory the game has rcon 32330, but it wasn't seeming to work...
 
