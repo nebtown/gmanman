@@ -3,7 +3,7 @@ const path = require("path");
 const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 
-const { gameDir, debugLog } = require("./cliArgs");
+const { gameDir, debugLog } = require("../cliArgs");
 const CommonDockerGameManager = require("./common-docker-game-manager");
 
 module.exports = class FactorioManager extends CommonDockerGameManager {
@@ -78,5 +78,13 @@ module.exports = class FactorioManager extends CommonDockerGameManager {
 			console.error("setMods error: ", e);
 			return false;
 		}
+	}
+	filesToBackup() {
+		return [
+			path.join(gameDir, "volume", "saves"),
+			path.join(gameDir, "volume", "config"),
+			path.join(gameDir, "volume", "mods", "mod-list.json"),
+			path.join(gameDir, "volume", "mods", "mod-settings.dat"),
+		];
 	}
 };

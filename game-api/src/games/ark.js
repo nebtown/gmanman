@@ -1,7 +1,7 @@
 const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 
-const { game, debugLog } = require("./cliArgs");
+const { game, debugLog } = require("../cliArgs");
 const CommonDockerGameManager = require("./common-docker-game-manager");
 
 module.exports = class ArkManager extends CommonDockerGameManager {
