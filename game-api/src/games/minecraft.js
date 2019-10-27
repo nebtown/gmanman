@@ -1,4 +1,4 @@
-const { debugLog } = require("./cliArgs");
+const { debugLog } = require("../cliArgs");
 const CommonDockerGameManager = require("./common-docker-game-manager");
 
 module.exports = class MinecraftManager extends CommonDockerGameManager {

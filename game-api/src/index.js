@@ -1,8 +1,10 @@
 const express = require("express");
 const cors = require("cors");
+const gcs = require("./libjunkdrawer/gcs");
+const sevenzip = require('node-7z');
 const app = express();
 
-const { game, argv, debugLog, listenPort } = require("./cliArgs");
+const { game, gameDir, argv, debugLog, listenPort } = require("./cliArgs");
 
 app.use(express.json());
 app.use(cors()); // enable CORS on all routes
@@ -23,9 +25,48 @@ function getCurrentStatus() {
 	return currentStatus;
 }
 
-const gameManager = new (require("./" + game))({
+const gameManager = new (require("./games/" + game))({
 	getCurrentStatus,
 	setStatus,
+});
+
+app.get("/backup", async (request, response) => {
+	if (await gameManager.isProcessRunning()) {
+		return response.json({"ok": false, "message": "game is running"});
+	}
+
+	const d = new Date();
+	const backupFile = game + "-backup-" + d.toISOString() + ".7z";
+
+	const stream = sevenzip.add(
+		backupFile,
+		gameManager.filesToBackup(),
+		{
+			"timeStats": true,
+			"workingDir": gameDir,
+		},
+	);
+
+	const promise = new Promise((resolve, reject) => {
+		stream.on('end', async function () {
+			const uploadErr = await gcs.uploadFile(game, backupFile);
+			if (uploadErr == null) {
+				resolve({"ok": true})
+			} else {
+				console.warn(uploadErr);
+				resolve({"ok": false, "error": uploadErr});
+			}
+		});
+
+		stream.on('error', (err) => reject({"ok": false, "error": err}))
+	});
+
+	try {
+		response.json(await promise)
+	} catch (err) {
+		console.warn(err);
+		response.json(err)
+	}
 });
 
 app.get("/control", async (request, response) => {

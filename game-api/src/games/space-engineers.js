@@ -1,7 +1,7 @@
 const gamedig = require("gamedig");
 const { spawn: spawnProcess } = require("child_process");
 
-const { gameDir, debugLog } = require("./cliArgs");
+const { gameDir, debugLog } = require("../cliArgs");
 
 module.exports = class SpaceEngineersManager {
 	constructor({ setStatus }) {

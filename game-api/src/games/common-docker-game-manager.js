@@ -2,7 +2,7 @@ const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
 const docker = new (require("dockerode"))();
 
-const { game, gameDir, debugLog, argv } = require("./cliArgs");
+const { game, gameDir, debugLog, argv } = require("../cliArgs");
 
 module.exports = class CommonDockerGameManager {
 	constructor({ getCurrentStatus, setStatus }) {
