@@ -1,14 +1,14 @@
-# Requirements
+## Requirements
 
 * 7z (p7zip)
 
-# Testing
+## Testing
 
 To test backups, run
 
 `npm start -- --game=test --dir=test`
 
-# Game Api HTTP Spec**
+## Game Api HTTP Spec
 
 * `GET /control`
 Returns current status of Game Server
