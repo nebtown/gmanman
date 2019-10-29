@@ -162,9 +162,9 @@ app.put("/mods", async (request, response) => {
 app.listen(listenPort);
 console.log(`Listening on port ${listenPort}`);
 
-function registerWithGateway() {
-	return axios
-		.post(gatewayUrl, {
+async function registerWithGateway() {
+	try {
+		return await axios.post(`${gatewayUrl}register/`, {
 			game,
 			id: gameId,
 			name: gameName,
@@ -176,8 +176,11 @@ function registerWithGateway() {
 				gameManager.update && "update",
 				gameManager.filesToBackup && "backup",
 			].filter(Boolean),
-		})
-		.catch(err => console.error("Failed to register with Gateway", err));
+		});
+	} catch (err) {
+		console.error("Failed to register with Gateway", err.message);
+		return new Promise(() => {});
+	}
 }
 registerWithGateway().then(({ data }) =>
 	console.log("Registered with Gateway", data)

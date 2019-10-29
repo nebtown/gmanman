@@ -18,7 +18,7 @@ module.exports = {
 	urlRoot: argv.urlRoot || `https://gmanman.nebtown.info/${gameId}/`,
 	gameDir: argv.dir ? path.join(argv.dir) : path.join(__dirname, "../"),
 	debugLog,
-	listenPort: argv.port || 6725,
-	gatewayUrl: argv.gateway || "https://gmanman.nebtown.info/gateway/register/",
+	listenPort: argv.port || 6726,
+	gatewayUrl: argv.gatewayUrl || "https://gmanman.nebtown.info/gateway/",
 	connectUrl: argv.connectUrl,
 };

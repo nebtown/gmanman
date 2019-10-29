@@ -4,7 +4,8 @@
   "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "local": "npm start -- --game=test --dir=test --gatewayUrl=http://localhost:6725/ --urlRoot=http://localhost:6726/"
   },
   "dependencies": {
     "@google-cloud/storage": "^4.0.0",

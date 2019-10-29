@@ -56,11 +56,25 @@ app.all("/:gameId/:endpoint", async (request, response) => {
 	if (!gameApi) {
 		return response.json({ error: "game not found" });
 	}
-	const { data } = await axios({
-		method: request.method,
-		url: `${gameApi.url}/${endpoint}`,
-	});
-	response.json(data);
+	try {
+		const { data } = await axios({
+			method: request.method,
+			url: `${gameApi.url}${endpoint}`,
+			timeout: 3000,
+		});
+		response.json(data);
+	} catch (err) {
+		if (err.code === "ECONNREFUSED") {
+			debugLog("Game API", gameApi.url, err.message);
+			response.status(504).json({ message: "Game API offline" });
+		} else if (err.response && err.response.status) {
+			debugLog("Game API", gameApi.url, err);
+			response.status(err.response.status).json(err.response.data);
+		} else {
+			console.warn("Game API", err);
+			response.status(500).json({});
+		}
+	}
 });
 
 app.listen(listenPort);

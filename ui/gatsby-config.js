@@ -1,6 +1,11 @@
+const process = require("process");
+
 module.exports = {
 	siteMetadata: {
 		title: "Gman Server Manager",
+		gatewayUrl:
+			process.env.GMANMAN_GATEWAY_URL ||
+			"https://gmanman.nebtown.info/gateway/",
 	},
 	plugins: [
 		{

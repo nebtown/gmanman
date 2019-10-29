@@ -20,12 +20,10 @@ function generatePageTitle() {
 	return titleOptions[Math.floor(Math.random() * titleOptions.length)];
 }
 
-const gatewayUrl = "https://gmanman.nebtown.info/gateway/";
-
 export default () => {
 	const {
 		site: {
-			siteMetadata: { title: siteTitle },
+			siteMetadata: { title: siteTitle, gatewayUrl },
 		},
 	} = useStaticQuery(
 		graphql`
@@ -33,6 +31,7 @@ export default () => {
 				site {
 					siteMetadata {
 						title
+						gatewayUrl
 					}
 				}
 			}

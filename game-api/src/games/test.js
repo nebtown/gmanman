@@ -16,15 +16,28 @@ module.exports = class TestManager {
 		this.logData += "Stopping...\n";
 	}
 	async isProcessRunning() {
-		return false;
+		return (
+			this.getCurrentStatus() === "starting" ||
+			this.getCurrentStatus() === "running"
+		);
 	}
 	async getPlayerCount() {
+		if (this.getCurrentStatus() === "starting") {
+			this.setStatus("running");
+		}
+		if (this.getCurrentStatus() === "running") {
+			return 0;
+		}
 		return false;
 	}
 	async logs() {
 		return this.logData;
 	}
-	update() {}
+	update() {
+		setTimeout(() => {
+			this.setStatus("stopped");
+		}, 2000);
+	}
 	getMods() {
 		return [{ id: "a-mod", enabled: true }];
 	}

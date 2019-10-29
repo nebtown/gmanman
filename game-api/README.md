@@ -1,12 +1,11 @@
 ## Requirements
 
-* 7z (p7zip)
+- 7z (p7zip) for backups
 
-## Testing
+## Running
 
-To test backups, run
-
-`npm start -- --game=test --dir=test`
+- `yarn start --game=minecraft --dir=/servers/minecraft` launches a Game API
+- `yarn local` runs a test Game API
 
 ## Game Api HTTP Spec
 
