@@ -26,6 +26,7 @@ import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
 import { useInterval, useMountEffect } from "../util/hooks";
 import LogViewer from "./LogViewer";
 import ModsViewer from "./ModsViewer";
+import ConfirmationModal from "./ConfirmationModal";
 
 ServerCard.propTypes = {
 	title: PropTypes.string.isRequired,
@@ -58,9 +59,10 @@ export default function ServerCard({
 
 	const [status, setStatus] = useState("unknown");
 	const [numPlayers, setNumPlayers] = useState(-1);
-	const [logOpen, setLogOpen] = React.useState(false);
-	const [logLines, setLogLines] = React.useState("");
-	const [modsOpen, setModsOpen] = React.useState(false);
+	const [logOpen, setLogOpen] = useState(false);
+	const [logLines, setLogLines] = useState("");
+	const [modsOpen, setModsOpen] = useState(false);
+	const [stopConfirmationOpen, setStopConfirmationOpen] = useState(false);
 
 	const pollStatus = async () => {
 		try {
@@ -195,11 +197,8 @@ export default function ServerCard({
 				{(status === "starting" || status === "running") && (
 					<Button
 						color="secondary"
-						onClick={async () => {
-							const {
-								data: { status: newStatus },
-							} = await axios.delete(controlUrl);
-							setStatus(newStatus);
+						onClick={() => {
+							setStopConfirmationOpen(true);
 						}}
 					>
 						<StopIcon /> Stop
@@ -261,6 +260,35 @@ export default function ServerCard({
 					setOpen={setModsOpen}
 				/>
 			)}
+			<ConfirmationModal
+				title="Shutdown Confirmation"
+				open={stopConfirmationOpen}
+				setOpen={setStopConfirmationOpen}
+				primaryButton={
+					<Button
+						onClick={async () => {
+							const {
+								data: { status: newStatus },
+							} = await axios.delete(controlUrl);
+							setStatus(newStatus);
+							setStopConfirmationOpen(false);
+						}}
+						color="secondary"
+					>
+						<PowerIcon /> Confirm
+					</Button>
+				}
+			>
+				Just double checking you wanted to shutdown {title}?
+				{numPlayers && numPlayers > 0 ? (
+					<>
+						<br />
+						There are still {numPlayers} players connected!!
+					</>
+				) : (
+					""
+				)}
+			</ConfirmationModal>
 		</Card>
 	);
 }
