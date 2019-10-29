@@ -4,16 +4,35 @@ const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 
 const { gameDir, debugLog, connectUrl } = require("../cliArgs");
-const CommonDockerGameManager = require("./common-docker-game-manager");
+const {
+	dockerComposeStart,
+	dockerComposeStop,
+	dockerIsProcessRunning,
+	dockerLogs,
+	rconConnect,
+} = require("./common-helpers");
 
-module.exports = class FactorioManager extends CommonDockerGameManager {
+module.exports = class FactorioManager {
+	constructor({ getCurrentStatus, setStatus }) {
+		this.getCurrentStatus = getCurrentStatus;
+		this.setStatus = setStatus;
+	}
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:34197"}`;
+	}
+	start() {
+		return dockerComposeStart();
+	}
+	stop() {
+		return dockerComposeStop();
+	}
+	isProcessRunning() {
+		return dockerIsProcessRunning();
 	}
 	async getPlayerCount() {
 		let playerList;
 		try {
-			playerList = await (await this.rconConnect(34198)).send("/players");
+			playerList = await (await rconConnect(34198)).send("/players");
 		} catch (e) {
 			debugLog("rcon", e.message);
 			return false;
@@ -26,7 +45,7 @@ module.exports = class FactorioManager extends CommonDockerGameManager {
 		return Number(matches[1]);
 	}
 	async logs() {
-		const logs = await super.logs();
+		const logs = await dockerLogs();
 		if (this.getCurrentStatus() === "updating") {
 			return logs;
 		}

@@ -69,7 +69,13 @@ app.all("/:gameId/:endpoint", async (request, response) => {
 			debugLog("Game API", gameApi.url, err.message);
 			response.status(504).json({ message: "Game API offline" });
 		} else if (err.response && err.response.status) {
-			debugLog("Game API", gameApi.url, err);
+			debugLog(
+				"Game API",
+				gameApi.url,
+				err.message,
+				`Status: ${err.response.status} ${err.response.statusText}`,
+				err.response.data
+			);
 			response.status(err.response.status).json(err.response.data);
 		} else {
 			console.warn("Game API", err);

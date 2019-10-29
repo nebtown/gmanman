@@ -1,11 +1,30 @@
 const { debugLog } = require("../cliArgs");
-const CommonDockerGameManager = require("./common-docker-game-manager");
+const {
+	dockerComposeStart,
+	dockerComposeStop,
+	dockerIsProcessRunning,
+	dockerLogs,
+	rconConnect,
+} = require("./common-helpers");
 
-module.exports = class MinecraftManager extends CommonDockerGameManager {
+module.exports = class MinecraftManager {
+	constructor({ getCurrentStatus, setStatus }) {
+		this.getCurrentStatus = getCurrentStatus;
+		this.setStatus = setStatus;
+	}
+	start() {
+		return dockerComposeStart();
+	}
+	stop() {
+		return dockerComposeStop();
+	}
+	isProcessRunning() {
+		return dockerIsProcessRunning();
+	}
 	async getPlayerCount() {
 		let playerList;
 		try {
-			playerList = await (await this.rconConnect(27075)).send("list");
+			playerList = await (await rconConnect(27075)).send("list");
 		} catch (e) {
 			debugLog("rcon", e.message);
 			return false;
@@ -20,7 +39,7 @@ module.exports = class MinecraftManager extends CommonDockerGameManager {
 		return Number(matches[1]);
 	}
 	async logs() {
-		const logs = await super.logs();
+		const logs = await dockerLogs();
 		return logs.replace(/^(.*?)\[/gm, "["); // trim colour codes
 	}
 };

@@ -42,13 +42,10 @@ const gameManager = new (require("./games/" + game))({
 
 app.get("/backup", async (request, response) => {
 	if (!gameManager.filesToBackup) {
-		return response.json({
-			ok: false,
-			message: "game does not support backups",
-		});
+		return response.status(501).json({ ok: false, error: "Not Implemented" });
 	}
 	if (await gameManager.isProcessRunning()) {
-		return response.json({ ok: false, message: "game is running" });
+		return response.status(412).json({ ok: false, message: "game is running" });
 	}
 
 	const backupFile = `${game}-backup-${new Date().toISOString()}.7z`;
@@ -132,30 +129,33 @@ app.get("/logs", async (request, response) => {
 		});
 	} catch (e) {
 		console.log("/logs: ", e);
-		response.json({});
+		response.status(500).json({});
 	}
 });
 
 app.post("/update", async (request, response) => {
-	if (gameManager.update) {
-		currentStatus = "updating";
-		gameManager.update();
-		response.json({ status: currentStatus });
+	if (!gameManager.update) {
+		return response.status(501).json({ error: "Not Implemented" });
 	}
+	currentStatus = "updating";
+	gameManager.update();
+	response.json({ status: currentStatus });
 });
 
 app.get("/mods", async (request, response) => {
-	if (gameManager.getMods) {
-		response.json({ mods: gameManager.getMods() });
+	if (!gameManager.getMods) {
+		response.status(501).json({ error: "Not Implemented" });
 	}
+	response.json({ mods: gameManager.getMods() });
 });
 app.put("/mods", async (request, response) => {
-	if (gameManager.setMods) {
-		if (gameManager.setMods(request.body.mods)) {
-			response.json({});
-		} else {
-			throw new Error("Failed setting mods");
-		}
+	if (!gameManager.setMods) {
+		response.status(501).json({ error: "Not Implemented" });
+	}
+	if (gameManager.setMods(request.body.mods)) {
+		response.json({});
+	} else {
+		response.status(400).json({ error: "Failed setting mods" });
 	}
 });
 

@@ -3,12 +3,31 @@ const docker = new (require("dockerode"))();
 const path = require("path");
 
 const { game, gameDir, debugLog, connectUrl } = require("../cliArgs");
-const CommonDockerGameManager = require("./common-docker-game-manager");
-const { readEnvFileCsv, writeEnvFileCsv } = require("./common-helpers");
+const {
+	dockerComposeStart,
+	dockerComposeStop,
+	dockerIsProcessRunning,
+	dockerLogs,
+	readEnvFileCsv,
+	writeEnvFileCsv,
+} = require("./common-helpers");
 
-module.exports = class ArkManager extends CommonDockerGameManager {
+module.exports = class ArkManager {
+	constructor({ getCurrentStatus, setStatus }) {
+		this.getCurrentStatus = getCurrentStatus;
+		this.setStatus = setStatus;
+	}
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
+	}
+	start() {
+		return dockerComposeStart();
+	}
+	stop() {
+		return dockerComposeStop();
+	}
+	isProcessRunning() {
+		return dockerIsProcessRunning();
 	}
 	async getPlayerCount() {
 		// in theory the game has rcon 32330, but it wasn't seeming to work...
@@ -43,7 +62,7 @@ module.exports = class ArkManager extends CommonDockerGameManager {
 		return Number(matches[1]);
 	}
 	async logs() {
-		const logs = await super.logs();
+		const logs = await dockerLogs();
 		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
 	}
 	getMods() {
