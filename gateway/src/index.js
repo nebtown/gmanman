@@ -60,6 +60,7 @@ app.all("/:gameId/:endpoint", async (request, response) => {
 		const { data } = await axios({
 			method: request.method,
 			url: `${gameApi.url}${endpoint}`,
+			data: request.body,
 			timeout: 3000,
 		});
 		response.json(data);

@@ -87,13 +87,21 @@ export default function ModsViewer({ title, modsUrl, open, setOpen }) {
 								id="new-mod-field"
 								label="New Mod ID"
 								value={modIdInput}
-								onChange={event => setModIdInput(event.target.value)}
+								onChange={event =>
+									setModIdInput(event.target.value.replace(/[\r\n,]/, ""))
+								}
 								margin="dense"
 								variant="outlined"
 							/>
 							<Button
 								onClick={() => {
-									setModsList([...modsList, { id: modIdInput, enabled: true }]);
+									setModsList([
+										...modsList,
+										{
+											id: modIdInput.trim(),
+											enabled: true,
+										},
+									]);
 									setModIdInput("");
 								}}
 							>

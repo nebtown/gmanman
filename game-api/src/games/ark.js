@@ -1,8 +1,10 @@
 const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
+const path = require("path");
 
-const { game, debugLog, connectUrl } = require("../cliArgs");
+const { game, gameDir, debugLog, connectUrl } = require("../cliArgs");
 const CommonDockerGameManager = require("./common-docker-game-manager");
+const { readEnvFileCsv, writeEnvFileCsv } = require("./common-helpers");
 
 module.exports = class ArkManager extends CommonDockerGameManager {
 	getConnectUrl() {
@@ -43,5 +45,15 @@ module.exports = class ArkManager extends CommonDockerGameManager {
 	async logs() {
 		const logs = await super.logs();
 		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
+	}
+	getMods() {
+		return readEnvFileCsv("ARK_MODS");
+	}
+	setMods(modsList) {
+		writeEnvFileCsv("ARK_MODS", modsList);
+		return true;
+	}
+	filesToBackup() {
+		return [path.join(gameDir, "Saved"), path.join(gameDir, ".env")];
 	}
 };

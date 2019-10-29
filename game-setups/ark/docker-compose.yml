@@ -8,6 +8,7 @@ services:
       - SESSIONNAME=Nebtown
       - SERVERMAP=${SERVERMAP:-TheIsland}
       - SAVEDIRECTORY=${SAVEDIRECTORY:-SavedArks}
+      - ARK_MODS=${ARK_MODS}
       - MAX_PLAYERS=12
       - SERVERPASSWORD=
       - ADMINPASSWORD=${ADMINPASSWORD:-}
