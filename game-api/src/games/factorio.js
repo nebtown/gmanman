@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const stripAnsi = require("strip-ansi");
+const axios = require("axios");
 const docker = new (require("dockerode"))();
 
 const { gameDir, debugLog, connectUrl } = require("../cliArgs");
@@ -100,6 +101,27 @@ module.exports = class FactorioManager {
 			console.error("setMods error: ", e);
 			return false;
 		}
+	}
+	async getModList() {
+		if (!this.cachedModList) {
+			const { data } = await axios.get(
+				"https://mods.factorio.com/api/mods?page_size=max"
+			);
+			this.cachedModList = data.results
+				.sort((a, b) => b.downloads_count - a.downloads_count)
+				.map(({ name, title, summary, downloads_count }) => ({
+					id: name,
+					label: title,
+				}));
+		}
+		return this.cachedModList;
+	}
+	async getModSearch(query) {
+		query = query.toLowerCase();
+		return (await this.getModList()).filter(
+			({ id, label }) =>
+				id.toLowerCase().includes(query) || label.toLowerCase().includes(query)
+		);
 	}
 	filesToBackup() {
 		return [

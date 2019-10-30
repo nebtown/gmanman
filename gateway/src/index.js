@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const querystring = require("querystring");
 
 const app = express();
 const { debugLog, listenPort } = require("./cliArgs");
@@ -50,18 +51,21 @@ app.post("/register", (request, response) => {
 	response.json({});
 });
 
-app.all("/:gameId/:endpoint", async (request, response) => {
-	const { gameId, endpoint } = request.params;
+app.all("/:gameId/*", async (request, response) => {
+	const { gameId, "0": endpoint } = request.params;
 	const gameApi = knownGameApis[gameId];
 	if (!gameApi) {
 		return response.json({ error: "game not found" });
 	}
+	const queryString = Object.keys(request.query).length
+		? "?" + querystring.stringify(request.query)
+		: "";
 	try {
 		const { data } = await axios({
 			method: request.method,
-			url: `${gameApi.url}${endpoint}`,
+			url: `${gameApi.url}${endpoint}${queryString}`,
 			data: request.body,
-			timeout: 3000,
+			timeout: 5000,
 		});
 		response.json(data);
 	} catch (err) {

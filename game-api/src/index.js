@@ -158,6 +158,22 @@ app.put("/mods", async (request, response) => {
 		response.status(400).json({ error: "Failed setting mods" });
 	}
 });
+// Returns a complete list of all possible mods, for clientside searching
+// Probably not possible for most games...
+app.get("/mods/list", async (request, response) => {
+	if (!gameManager.getModList) {
+		response.status(501).json({ error: "Not Implemented" });
+	}
+	response.json({ mods: await gameManager.getModList() });
+});
+app.get("/mods/search", async (request, response) => {
+	if (!gameManager.getModSearch) {
+		response.status(501).json({ error: "Not Implemented" });
+	}
+	response.json({
+		mods: await gameManager.getModSearch(request.query.q || ""),
+	});
+});
 
 app.listen(listenPort);
 console.log(`Listening on port ${listenPort}`);
@@ -173,6 +189,8 @@ async function registerWithGateway() {
 			features: [
 				gameManager.logs && "logs",
 				gameManager.getMods && "mods",
+				gameManager.getModList && "modList",
+				gameManager.getModSearch && "modSearch",
 				gameManager.update && "update",
 				gameManager.filesToBackup && "backup",
 			].filter(Boolean),

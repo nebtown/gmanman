@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const axios = require("axios");
 
 const { gameDir, debugLog } = require("../cliArgs");
 
@@ -39,9 +40,30 @@ module.exports = class TestManager {
 		}, 2000);
 	}
 	getMods() {
-		return [{ id: "a-mod", enabled: true }];
+		if (!this.currentMods) {
+			this.currentMods = [{ id: "honk", enabled: true }];
+		}
+		return this.currentMods;
 	}
-	setMods(modsList) {}
+	setMods(modsList) {
+		this.currentMods = modsList;
+		return true;
+	}
+	async getModList() {
+		return [
+			{ id: "bob-mod-1", label: "Bob's Aircraft Mod 1" },
+			{ id: "bob-mod-2", label: "Bob's Mod 2" },
+			{ id: "honk", label: "HONK HONK" },
+			{ id: "angel 4", label: "Angel Crazy mod" },
+		];
+	}
+	async getModSearch(query) {
+		query = query.toLowerCase();
+		return (await this.getModList()).filter(
+			({ id, label }) =>
+				id.toLowerCase().includes(query) || label.toLowerCase().includes(query)
+		);
+	}
 	filesToBackup() {
 		return [path.join(gameDir, "file1.txt"), path.join(gameDir, "dir1")];
 	}

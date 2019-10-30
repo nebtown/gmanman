@@ -256,6 +256,7 @@ export default function ServerCard({
 				<ModsViewer
 					title={title}
 					modsUrl={modsUrl}
+					supportsModList={features.includes("modList")}
 					open={modsOpen}
 					setOpen={setModsOpen}
 				/>

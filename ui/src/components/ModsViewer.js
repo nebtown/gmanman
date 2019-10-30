@@ -12,20 +12,28 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import Switch from "@material-ui/core/Switch";
-import TextField from "@material-ui/core/TextField";
 
 import CloseIcon from "@material-ui/icons/Close";
 import AddIcon from "@material-ui/icons/Add";
 import SaveIcon from "@material-ui/icons/Save";
 
+import ModsSearch from "./ModsSearch";
+
 ModsViewer.propTypes = {
 	title: PropTypes.string.isRequired,
 	modsUrl: PropTypes.string.isRequired,
+	supportsModList: PropTypes.bool,
 	open: PropTypes.bool,
 	setOpen: PropTypes.func.isRequired,
 };
 
-export default function ModsViewer({ title, modsUrl, open, setOpen }) {
+export default function ModsViewer({
+	title,
+	modsUrl,
+	supportsModList,
+	open,
+	setOpen,
+}) {
 	const [modsList, setModsList] = useState(null);
 	const [modIdInput, setModIdInput] = useState("");
 
@@ -55,11 +63,16 @@ export default function ModsViewer({ title, modsUrl, open, setOpen }) {
 			aria-labelledby="scroll-dialog-title"
 		>
 			<DialogTitle id="scroll-dialog-title">{title} Mods</DialogTitle>
-			<DialogContent dividers={true}>
+			<DialogContent
+				style={{
+					paddingTop: 0,
+					paddingBottom: 2,
+				}}
+			>
 				{!modsList ? (
 					"Loading..."
 				) : (
-					<List dense={true}>
+					<List dense={true} disablePadding>
 						{modsList.map(({ id, label, enabled }) => (
 							<ListItem key={id}>
 								<ListItemText id={`${id}-label`} primary={label || id} />
@@ -82,42 +95,48 @@ export default function ModsViewer({ title, modsUrl, open, setOpen }) {
 								</ListItemSecondaryAction>
 							</ListItem>
 						))}
-						<ListItem>
-							<TextField
-								id="new-mod-field"
-								label="New Mod ID"
-								value={modIdInput}
-								onChange={event =>
-									setModIdInput(event.target.value.replace(/[\r\n,]/, ""))
-								}
-								margin="dense"
-								variant="outlined"
-							/>
-							<Button
-								onClick={() => {
-									setModsList([
-										...modsList,
-										{
-											id: modIdInput.trim(),
-											enabled: true,
-										},
-									]);
-									setModIdInput("");
-								}}
-							>
-								<AddIcon classes={{ root: "margin-right-2" }} /> Add
-							</Button>
-						</ListItem>
 					</List>
 				)}
+			</DialogContent>
+			<DialogContent
+				style={{
+					paddingTop: 0,
+					paddingBottom: 0,
+					overflowY: "initial",
+					display: "flex",
+				}}
+			>
+				<ModsSearch
+					modsUrl={modsUrl}
+					currentMods={modsList}
+					supportsModList={supportsModList}
+					modIdInput={modIdInput}
+					setModIdInput={setModIdInput}
+				/>
+				<Button
+					onClick={() => {
+						setModsList([
+							...modsList,
+							{
+								id: modIdInput.trim(),
+								enabled: true,
+							},
+						]);
+						setModIdInput("");
+					}}
+					startIcon={<AddIcon />}
+				>
+					Add
+				</Button>
 			</DialogContent>
 			<DialogActions>
 				<Button
 					onClick={() => {
 						setOpen(false);
 					}}
+					startIcon={<CloseIcon />}
 				>
-					<CloseIcon classes={{ root: "margin-right-2" }} /> Cancel
+					Cancel
 				</Button>
 				<Button
 					onClick={async () => {
@@ -125,8 +144,9 @@ export default function ModsViewer({ title, modsUrl, open, setOpen }) {
 						setOpen(false);
 					}}
 					color="primary"
+					startIcon={<SaveIcon />}
 				>
-					<SaveIcon classes={{ root: "margin-right-2" }} /> Save
+					Save
 				</Button>
 			</DialogActions>
 		</Dialog>
