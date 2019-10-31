@@ -21,4 +21,5 @@ module.exports = {
 	listenPort: argv.port || 6726,
 	gatewayUrl: argv.gatewayUrl || "https://gmanman.nebtown.info/gateway/",
 	connectUrl: argv.connectUrl,
+	steamApiKey: argv.steamApiKey,
 };

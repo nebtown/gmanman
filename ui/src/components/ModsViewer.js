@@ -14,7 +14,6 @@ import ListItemText from "@material-ui/core/ListItemText";
 import Switch from "@material-ui/core/Switch";
 
 import CloseIcon from "@material-ui/icons/Close";
-import AddIcon from "@material-ui/icons/Add";
 import SaveIcon from "@material-ui/icons/Save";
 
 import ModsSearch from "./ModsSearch";
@@ -23,6 +22,7 @@ ModsViewer.propTypes = {
 	title: PropTypes.string.isRequired,
 	modsUrl: PropTypes.string.isRequired,
 	supportsModList: PropTypes.bool,
+	supportsModSearch: PropTypes.bool,
 	open: PropTypes.bool,
 	setOpen: PropTypes.func.isRequired,
 };
@@ -31,11 +31,11 @@ export default function ModsViewer({
 	title,
 	modsUrl,
 	supportsModList,
+	supportsModSearch,
 	open,
 	setOpen,
 }) {
 	const [modsList, setModsList] = useState(null);
-	const [modIdInput, setModIdInput] = useState("");
 
 	useEffect(() => {
 		if (!open) {
@@ -73,9 +73,28 @@ export default function ModsViewer({
 					"Loading..."
 				) : (
 					<List dense={true} disablePadding>
-						{modsList.map(({ id, label, enabled }) => (
-							<ListItem key={id}>
-								<ListItemText id={`${id}-label`} primary={label || id} />
+						{modsList.map(({ id, label, href, enabled }) => (
+							<ListItem
+								key={id}
+								style={label && id ? { paddingTop: 0, paddingBottom: 0 } : {}}
+							>
+								<ListItemText
+									id={`${id}-label`}
+									primary={label}
+									secondary={
+										href ? (
+											<a
+												href={href}
+												target="_blank"
+												style={{ fontSize: "smaller" }}
+											>
+												{id}
+											</a>
+										) : (
+											id
+										)
+									}
+								/>
 								<ListItemSecondaryAction>
 									<Switch
 										edge="end"
@@ -108,26 +127,11 @@ export default function ModsViewer({
 			>
 				<ModsSearch
 					modsUrl={modsUrl}
-					currentMods={modsList}
+					currentMods={modsList || []}
+					setCurrentMods={setModsList}
 					supportsModList={supportsModList}
-					modIdInput={modIdInput}
-					setModIdInput={setModIdInput}
+					supportsModSearch={supportsModSearch}
 				/>
-				<Button
-					onClick={() => {
-						setModsList([
-							...modsList,
-							{
-								id: modIdInput.trim(),
-								enabled: true,
-							},
-						]);
-						setModIdInput("");
-					}}
-					startIcon={<AddIcon />}
-				>
-					Add
-				</Button>
 			</DialogContent>
 			<DialogActions>
 				<Button

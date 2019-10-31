@@ -2,11 +2,15 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { FixedSizeList } from "react-window";
 import axios from "axios";
+import AwesomeDebouncePromise from "awesome-debounce-promise";
+import useConstant from "use-constant";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import TextField from "@material-ui/core/TextField";
+import Button from "@material-ui/core/Button";
+import AddIcon from "@material-ui/core/SvgIcon/SvgIcon";
 
 function renderRow(props) {
 	const { data, index, style } = props;
@@ -80,25 +84,34 @@ const useStyles = makeStyles({
 ModsSearch.propTypes = {
 	modsUrl: PropTypes.string.isRequired,
 	currentMods: PropTypes.array.isRequired,
+	setCurrentMods: PropTypes.func.isRequired,
 	supportsModList: PropTypes.bool,
-	modIdInput: PropTypes.string,
-	setModIdInput: PropTypes.func.isRequired,
+	supportsModSearch: PropTypes.bool,
 };
 
 export default function ModsSearch({
 	modsUrl,
 	currentMods,
+	setCurrentMods,
 	supportsModList,
-	modIdInput,
-	setModIdInput,
+	supportsModSearch,
 }) {
 	const classes = useStyles();
+	const [modIdInput, setModIdInput] = useState("");
+	const [modTextInput, setModTextInput] = useState("");
 	const [open, setOpen] = useState(false);
-	const [options, setOptions] = React.useState([]);
-	const loading = open && options.length === 0;
+	const [options, setOptions] = useState([]);
+
+	// Some games can provide a full list of mods, allowing clientside search
+	// if unavailable, serverside search is used
+	// if neither, provide a basic text input
+	const useServersideSearch = supportsModSearch && !supportsModList;
+	const loading = open && !useServersideSearch && options.length === 0;
+
+	// Fetch whole Mod List (clientside searching)
 	useEffect(() => {
 		let active = true;
-		if (!loading || !supportsModList) {
+		if (!loading || !supportsModList || useServersideSearch) {
 			return undefined;
 		}
 
@@ -117,73 +130,137 @@ export default function ModsSearch({
 		return () => {
 			active = false;
 		};
-	}, [open, loading, currentMods, supportsModList, modsUrl]);
-	/*useEffect(() => {
-		if (!open) {
-			setOptions([]);
-		}
-	}, [open]);*/
+	}, [
+		open,
+		loading,
+		currentMods,
+		supportsModList,
+		useServersideSearch,
+		modsUrl,
+	]);
 
-	return supportsModList ? (
-		<Autocomplete
-			style={{ width: 280 }}
-			classes={classes}
-			open={open}
-			onOpen={() => {
-				setOpen(true);
-			}}
-			onClose={() => {
-				setOpen(false);
-			}}
-			onChange={(event, option) => {
-				setModIdInput(option ? option.id : "");
-			}}
-			getOptionLabel={option => option.label || option.id}
-			renderOption={option => {
-				if (option.label) {
-					return (
-						<div style={{ padding: "6px 16px" }}>
-							<div>{option.label}</div>
-							<div style={{ fontSize: "x-small" }}>{option.id}</div>
-						</div>
-					);
-				}
-				return option.id;
-			}}
-			disableListWrap
-			ListboxComponent={ListboxComponent}
-			options={options}
-			loading={loading}
-			renderInput={params => (
+	// Serverside Search for mods (partial clientside filtering)
+	const queryServerSearch = async query => {
+		if (!query || query.length < 3) {
+			return;
+		}
+
+		const { data } = await axios.get(modsUrl + "search/", {
+			params: { q: query },
+		});
+		setOptions(data.mods);
+		setModTextInput(query);
+	};
+	const debouncedQueryServerSearch = useConstant(() =>
+		AwesomeDebouncePromise(queryServerSearch, 300)
+	);
+
+	return (
+		<>
+			{supportsModList || supportsModSearch ? (
+				<Autocomplete
+					style={{ width: 280 }}
+					classes={classes}
+					open={open}
+					onOpen={() => {
+						setOpen(true);
+					}}
+					onClose={() => {
+						setOpen(false);
+					}}
+					onChange={(event, option) => {
+						setModIdInput(option ? option.id : "");
+					}}
+					getOptionLabel={option => option.label || option.id}
+					renderOption={option => {
+						if (option.label) {
+							return (
+								<div style={{ padding: "6px 16px" }}>
+									<div>{option.label}</div>
+									<div style={{ fontSize: "x-small" }}>
+										{option.href ? (
+											<a href={option.href} target="_blank">
+												{option.id}
+											</a>
+										) : (
+											option.id
+										)}
+									</div>
+								</div>
+							);
+						}
+						return option.id;
+					}}
+					disableListWrap
+					ListboxComponent={ListboxComponent}
+					options={options}
+					loading={loading}
+					noOptionsText="No mods found"
+					renderInput={params => (
+						<TextField
+							{...params}
+							Control
+							id="new-mod-field"
+							margin="dense"
+							variant="outlined"
+							onChange={event =>
+								useServersideSearch &&
+								debouncedQueryServerSearch(event.target.value)
+							}
+							fullWidth
+							InputProps={{
+								endAdornment: (
+									<>
+										{loading ? (
+											<CircularProgress color="inherit" size={20} />
+										) : null}
+										{params.InputProps.endAdornment}
+									</>
+								),
+							}}
+						/>
+					)}
+				/>
+			) : (
 				<TextField
-					{...params}
 					id="new-mod-field"
+					label="New Mod ID"
+					value={modIdInput}
+					onChange={event => {
+						const val = event.target.value.replace(/[\r\n,]/, "");
+						setModIdInput(val);
+						setModTextInput(val);
+					}}
 					margin="dense"
 					variant="outlined"
-					fullWidth
-					InputProps={{
-						endAdornment: (
-							<>
-								{loading ? (
-									<CircularProgress color="inherit" size={20} />
-								) : null}
-								{params.InputProps.endAdornment}
-							</>
-						),
-					}}
 				/>
 			)}
-		/>
-	) : (
-		<TextField
-			id="new-mod-field"
-			label="New Mod ID"
-			value={modIdInput}
-			onChange={event =>
-				setModIdInput(event.target.value.replace(/[\r\n,]/, ""))
-			}
-			margin="dense"
-			variant="outlined"
-		/>
+
+			<Button
+				onClick={() => {
+					let modId = (modIdInput || "").trim();
+					let modOption;
+					if (modId) {
+						modOption = options.find(
+							({ id, label }) => id === modId || label === modId
+						);
+					}
+					if (!modOption) {
+						modOption = options.find(
+							({ id, label }) => id === modTextInput || label === modTextInput
+						);
+					}
+					if (!modOption) {
+						return;
+					}
+					setCurrentMods([...currentMods, { ...modOption, enabled: true }]);
+					setModIdInput("");
+					setModTextInput("");
+				}}
+				startIcon={<AddIcon />}
+			>
+				Add
+			</Button>
+		</>
 	);
 }
