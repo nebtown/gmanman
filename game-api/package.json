@@ -19,6 +19,7 @@
     "minimist": "^1.2.0",
     "modern-rcon": "^1.0.3",
     "node-7z": "^1.1.1",
-    "strip-ansi": "^5.2.0"
+    "strip-ansi": "^5.2.0",
+    "xml2js": "^0.4.22"
   }
 }

@@ -146,13 +146,13 @@ app.get("/mods", async (request, response) => {
 	if (!gameManager.getMods) {
 		response.status(501).json({ error: "Not Implemented" });
 	}
-	response.json({ mods: gameManager.getMods() });
+	response.json({ mods: await gameManager.getMods() });
 });
 app.put("/mods", async (request, response) => {
 	if (!gameManager.setMods) {
 		response.status(501).json({ error: "Not Implemented" });
 	}
-	if (gameManager.setMods(request.body.mods)) {
+	if (await gameManager.setMods(request.body.mods)) {
 		response.json({});
 	} else {
 		response.status(400).json({ error: "Failed setting mods" });

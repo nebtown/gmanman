@@ -65,10 +65,10 @@ module.exports = class ArkManager {
 		const logs = await dockerLogs();
 		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
 	}
-	getMods() {
+	async getMods() {
 		return readEnvFileCsv("ARK_MODS");
 	}
-	setMods(modsList) {
+	async setMods(modsList) {
 		writeEnvFileCsv("ARK_MODS", modsList);
 		return true;
 	}

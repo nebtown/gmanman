@@ -67,9 +67,9 @@ module.exports = class FactorioManager {
 				this.setStatus("stopped");
 			});
 	}
-	getMods() {
+	async getMods() {
 		try {
-			const modListText = fs.readFileSync(
+			const modListText = await fs.promises.readFile(
 				path.join(gameDir, "volume", "mods", "mod-list.json")
 			);
 			return JSON.parse(modListText)
@@ -83,9 +83,9 @@ module.exports = class FactorioManager {
 			return [];
 		}
 	}
-	setMods(modsList) {
+	async setMods(modsList) {
 		try {
-			fs.writeFileSync(
+			await fs.promises.writeFile(
 				path.join(gameDir, "volume", "mods", "mod-list.json"),
 				JSON.stringify({
 					mods: [...modsList, { id: "base", enabled: true }].map(

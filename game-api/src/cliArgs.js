@@ -22,4 +22,5 @@ module.exports = {
 	gatewayUrl: argv.gatewayUrl || "https://gmanman.nebtown.info/gateway/",
 	connectUrl: argv.connectUrl,
 	steamApiKey: argv.steamApiKey,
+	saveName: argv.saveName || gameId.replace(new RegExp(`^${game}[\-_]?`), ""),
 };
