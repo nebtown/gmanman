@@ -29,15 +29,13 @@ import ModsViewer from "./ModsViewer";
 import ConfirmationModal from "./ConfirmationModal";
 
 ServerCard.propTypes = {
+	game: PropTypes.string,
+	id: PropTypes.string,
 	title: PropTypes.string.isRequired,
-	status: PropTypes.oneOf([
-		"stopped",
-		"starting",
-		"running",
-		"stopping",
-		"updating",
-		"unknown",
-	]),
+	icon: PropTypes.string,
+	baseUrl: PropTypes.string.isRequired,
+	features: PropTypes.arrayOf(PropTypes.string).isRequired,
+	connectUrl: PropTypes.string,
 };
 
 export default function ServerCard({
@@ -58,6 +56,14 @@ export default function ServerCard({
 	const modsUrl = baseUrl + "mods/";
 
 	const [status, setStatus] = useState("unknown");
+	/** status: PropTypes.oneOf([
+		"stopped",
+		"starting",
+		"running",
+		"stopping",
+		"updating",
+		"unknown",
+	]), */
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = useState(false);
 	const [logLines, setLogLines] = useState("");

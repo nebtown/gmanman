@@ -40,8 +40,8 @@ module.exports = class ArkManager {
 				Tty: false,
 				Cmd: ["arkmanager", "status"],
 			});
-			response = await new Promise(async (resolve, reject) => {
-				await exec.start(async (err, stream) => {
+			response = await new Promise((resolve, reject) => {
+				exec.start(async (err, stream) => {
 					if (err) return reject();
 					let message = "";
 					stream.on("data", data => (message += data.toString()));
@@ -66,10 +66,10 @@ module.exports = class ArkManager {
 		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
 	}
 	async getMods() {
-		return readEnvFileCsv("ARK_MODS");
+		return await readEnvFileCsv("ARK_MODS");
 	}
 	async setMods(modsList) {
-		writeEnvFileCsv("ARK_MODS", modsList);
+		await writeEnvFileCsv("ARK_MODS", modsList);
 		return true;
 	}
 	filesToBackup() {

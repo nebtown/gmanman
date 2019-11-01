@@ -38,6 +38,9 @@
     "use-constant": "^1.0.0"
   },
   "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-plugin-react": "^7.16.0",
+    "eslint-plugin-react-hooks": "^2.2.0",
     "prettier": "^1.18.2"
   },
   "repository": {

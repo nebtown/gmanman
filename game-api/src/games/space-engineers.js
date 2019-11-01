@@ -1,6 +1,7 @@
 const gamedig = require("gamedig");
 const xml2js = require("xml2js");
-const fs = require("fs");
+const fsPromises = require("../libjunkdrawer/fsPromises");
+const path = require("path");
 const { spawn: spawnProcess } = require("child_process");
 
 const {
@@ -71,7 +72,7 @@ module.exports = class SpaceEngineersManager {
 	}
 	async getMods() {
 		try {
-			const rawXml = await fs.promises.readFile(this.getModsFileName());
+			const rawXml = await fsPromises.readFile(this.getModsFileName());
 			const result = await xml2js.parseStringPromise(rawXml);
 			return result.MyObjectBuilder_WorldConfiguration.Mods[0].ModItem.map(
 				({ $: { FriendlyName }, PublishedFileId }) => ({
@@ -90,7 +91,7 @@ module.exports = class SpaceEngineersManager {
 	}
 	async setMods(modsList) {
 		try {
-			const rawXml = await fs.promises.readFile(this.getModsFileName());
+			const rawXml = await fsPromises.readFile(this.getModsFileName());
 			const parsedXml = await xml2js.parseStringPromise(rawXml);
 			const oldMods =
 				parsedXml.MyObjectBuilder_WorldConfiguration.Mods[0].ModItem;
@@ -112,7 +113,7 @@ module.exports = class SpaceEngineersManager {
 						PublishedFileId: [id],
 					};
 				});
-			await fs.promises.writeFile(
+			await fsPromises.writeFile(
 				this.getModsFileName(),
 				new xml2js.Builder().buildObject(parsedXml)
 			);

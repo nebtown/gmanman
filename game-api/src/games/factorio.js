@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fsPromises = require("../libjunkdrawer/fsPromises");
 const path = require("path");
 const stripAnsi = require("strip-ansi");
 const axios = require("axios");
@@ -69,7 +69,7 @@ module.exports = class FactorioManager {
 	}
 	async getMods() {
 		try {
-			const modListText = await fs.promises.readFile(
+			const modListText = await fsPromises.readFile(
 				path.join(gameDir, "volume", "mods", "mod-list.json")
 			);
 			return JSON.parse(modListText)
@@ -85,7 +85,7 @@ module.exports = class FactorioManager {
 	}
 	async setMods(modsList) {
 		try {
-			await fs.promises.writeFile(
+			await fsPromises.writeFile(
 				path.join(gameDir, "volume", "mods", "mod-list.json"),
 				JSON.stringify({
 					mods: [...modsList, { id: "base", enabled: true }].map(

@@ -21,5 +21,13 @@
     "node-7z": "^1.1.1",
     "strip-ansi": "^5.2.0",
     "xml2js": "^0.4.22"
+  },
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "eslint-plugin-node": "^10.0.0"
+  },
+  "type": "commonjs",
+  "engines": {
+    "node": ">=10.0.0"
   }
 }

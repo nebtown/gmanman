@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fsPromises = require("../libjunkdrawer/fsPromises");
 const path = require("path");
 const dotenv = require("dotenv");
 const compose = require("docker-compose");
@@ -39,27 +39,29 @@ async function rconConnect(port) {
 	return this.rcon;
 }
 
-function readEnvFileCsv(envName) {
-	const env = dotenv.parse(fs.readFileSync(path.join(gameDir, ".env")));
+async function readEnvFileCsv(envName) {
+	const env = dotenv.parse(
+		await fsPromises.readFile(path.join(gameDir, ".env"))
+	);
 	return (env[envName] || "")
 		.trim()
 		.split(",")
 		.map(id => ({ id, enabled: true }));
 }
 
-function writeEnvFileCsv(envName, modsList) {
+async function writeEnvFileCsv(envName, modsList) {
 	const envFilePath = path.join(gameDir, ".env");
 	const modsString = modsList
 		.filter(({ enabled }) => enabled)
 		.map(({ id }) => id)
 		.join(",");
-	const envFileContents = fs.readFileSync(envFilePath) || "";
+	const envFileContents = (await fsPromises.readFile(envFilePath)) || "";
 	const newEnvFile =
 		envFileContents
 			.toString()
 			.replace(new RegExp(`^${envName}=.*$\n?`, "m"), "")
 			.trim() + `\n${envName}=${modsString}`;
-	fs.writeFileSync(envFilePath, newEnvFile);
+	await fsPromises.writeFile(envFilePath, newEnvFile);
 }
 
 function steamWorkshopQuerySingleMod(appid, query) {

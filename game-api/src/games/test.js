@@ -1,4 +1,3 @@
-const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 
@@ -39,13 +38,13 @@ module.exports = class TestManager {
 			this.setStatus("stopped");
 		}, 2000);
 	}
-	getMods() {
+	async getMods() {
 		if (!this.currentMods) {
 			this.currentMods = [{ id: "honk", enabled: true }];
 		}
 		return this.currentMods;
 	}
-	setMods(modsList) {
+	async setMods(modsList) {
 		this.currentMods = modsList;
 		return true;
 	}

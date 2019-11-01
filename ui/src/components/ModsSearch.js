@@ -64,6 +64,12 @@ const ListboxComponent = React.forwardRef(function ListboxComponent(
 		</div>
 	);
 });
+ListboxComponent.propTypes = {
+	children: PropTypes.oneOf([
+		PropTypes.node,
+		PropTypes.arrayOf(PropTypes.node),
+	]),
+};
 
 const useStyles = makeStyles({
 	option: {
@@ -179,7 +185,11 @@ export default function ModsSearch({
 									<div>{option.label}</div>
 									<div style={{ fontSize: "x-small" }}>
 										{option.href ? (
-											<a href={option.href} target="_blank">
+											<a
+												href={option.href}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
 												{option.id}
 											</a>
 										) : (
@@ -199,7 +209,6 @@ export default function ModsSearch({
 					renderInput={params => (
 						<TextField
 							{...params}
-							Control
 							id="new-mod-field"
 							margin="dense"
 							variant="outlined"

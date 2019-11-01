@@ -86,6 +86,7 @@ export default function ModsViewer({
 											<a
 												href={href}
 												target="_blank"
+												rel="noopener noreferrer"
 												style={{ fontSize: "smaller" }}
 											>
 												{id}
