@@ -105,30 +105,35 @@ function steamWorkshopSearchMods(appid, query) {
 	);
 }
 async function steamWorkshopGetModSearch(appid, query) {
+	let data, headers;
 	try {
-		const { data } = await (query.match(/^[0-9]{4,30}$/)
+		({ data, headers } = await (query.match(/^[0-9]{4,30}$/)
 			? steamWorkshopQuerySingleMod(appid, query)
-			: steamWorkshopSearchMods(appid, query));
-		if (data.response && data.response.publishedfiledetails) {
-			return data.response.publishedfiledetails.map(
-				({
-					publishedfileid,
-					title,
-					short_description,
-					time_updated,
-					subscriptions,
-				}) => ({
-					id: publishedfileid,
-					label: title,
-					href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${publishedfileid}`,
-					updated: time_updated,
-				})
-			);
-		} else {
-			debugLog("getModSearch missing data", data);
-		}
+			: steamWorkshopSearchMods(appid, query)));
 	} catch (err) {
 		console.warn("getModSearch", err);
+		return [];
+	}
+	if (data.response && data.response.publishedfiledetails) {
+		return data.response.publishedfiledetails.map(
+			({
+				publishedfileid,
+				title,
+				short_description,
+				time_updated,
+				subscriptions,
+			}) => ({
+				id: publishedfileid,
+				label: title,
+				href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${publishedfileid}`,
+				updated: time_updated,
+			})
+		);
+	} else {
+		debugLog("getModSearch missing data", data, headers);
+		if (headers["x-eresult"] === "10") {
+			throw { error: "Steam Workshop is rate limiting their API" };
+		}
 	}
 	return [];
 }

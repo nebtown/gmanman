@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { graphql, useStaticQuery } from "gatsby";
 import { Helmet } from "react-helmet";
+import { SnackbarProvider } from "notistack";
 
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -50,7 +51,7 @@ export default () => {
 		setInterval(updateRegisteredGames, 10 * 1000);
 	});
 
-	return (
+	let renderedContainer = (
 		<Container>
 			<Helmet>
 				<title>{generatePageTitle()}</title>
@@ -83,4 +84,6 @@ export default () => {
 			</Grid>
 		</Container>
 	);
+	renderedContainer = <SnackbarProvider>{renderedContainer}</SnackbarProvider>;
+	return renderedContainer;
 };

@@ -170,9 +170,15 @@ app.get("/mods/search", async (request, response) => {
 	if (!gameManager.getModSearch) {
 		response.status(501).json({ error: "Not Implemented" });
 	}
-	response.json({
-		mods: await gameManager.getModSearch(request.query.q || ""),
-	});
+	try {
+		response.json({
+			mods: await gameManager.getModSearch(request.query.q || ""),
+		});
+	} catch (err) {
+		if (err.error) {
+			response.status(500).json(err);
+		}
+	}
 });
 
 app.listen(listenPort);

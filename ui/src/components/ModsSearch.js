@@ -4,6 +4,7 @@ import { FixedSizeList } from "react-window";
 import axios from "axios";
 import AwesomeDebouncePromise from "awesome-debounce-promise";
 import useConstant from "use-constant";
+import { useSnackbar } from "notistack";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -103,6 +104,7 @@ export default function ModsSearch({
 	supportsModSearch,
 }) {
 	const classes = useStyles();
+	const { enqueueSnackbar } = useSnackbar();
 	const [modIdInput, setModIdInput] = useState("");
 	const [modTextInput, setModTextInput] = useState("");
 	const [open, setOpen] = useState(false);
@@ -151,11 +153,18 @@ export default function ModsSearch({
 			return;
 		}
 
-		const { data } = await axios.get(modsUrl + "search/", {
-			params: { q: query },
-		});
-		setOptions(data.mods);
-		setModTextInput(query);
+		try {
+			const { data } = await axios.get(modsUrl + "search/", {
+				params: { q: query },
+			});
+			setOptions(data.mods);
+			setModTextInput(query);
+		} catch (err) {
+			console.warn("search/ error", err.message, err?.response?.data?.error);
+			enqueueSnackbar(err?.response?.data?.error || "Search failed", {
+				variant: "error",
+			});
+		}
 	};
 	const debouncedQueryServerSearch = useConstant(() =>
 		AwesomeDebouncePromise(queryServerSearch, 300)
