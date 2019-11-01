@@ -65,6 +65,9 @@ export default function ServerCard({
 	const [stopConfirmationOpen, setStopConfirmationOpen] = useState(false);
 
 	const pollStatus = async () => {
+		if (document.hidden) {
+			return;
+		}
 		try {
 			const {
 				data: { status: newStatus, playerCount: newNumPlayers },
@@ -87,9 +90,6 @@ export default function ServerCard({
 		}
 	}, 1000);
 	useInterval(() => {
-		if (document.hidden) {
-			return;
-		}
 		if (
 			!(
 				status === "starting" ||

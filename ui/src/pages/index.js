@@ -39,12 +39,15 @@ export default () => {
 	);
 	const [games, setGames] = useState([]);
 	async function updateRegisteredGames() {
+		if (document.hidden) {
+			return;
+		}
 		const { data } = await axios.get(`${gatewayUrl}register/`);
 		setGames(data.games);
 	}
 	useMountEffect(() => {
 		updateRegisteredGames();
-		setInterval(updateRegisteredGames, 15 * 1000);
+		setInterval(updateRegisteredGames, 10 * 1000);
 	});
 
 	return (

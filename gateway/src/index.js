@@ -46,7 +46,7 @@ app.get("/register", (request, response) => {
 	}
  */
 app.post("/register", (request, response) => {
-	knownGameApis[request.body.id] = request.body;
+	knownGameApis[request.body.id] = { ...request.body, timeoutStartTime: 0 };
 	debugLog(`Registered ${request.body.id}`, request.body);
 	response.json({});
 });
@@ -55,7 +55,7 @@ app.all("/:gameId/*", async (request, response) => {
 	const { gameId, "0": endpoint } = request.params;
 	const gameApi = knownGameApis[gameId];
 	if (!gameApi) {
-		return response.json({ error: "game not found" });
+		return response.status(404).json({ error: "GameIdNotFound" });
 	}
 	const queryString = Object.keys(request.query).length
 		? "?" + querystring.stringify(request.query)
@@ -68,10 +68,16 @@ app.all("/:gameId/*", async (request, response) => {
 			timeout: 5000,
 		});
 		response.json(data);
+		gameApi.timeoutStartTime = 0;
 	} catch (err) {
 		if (err.code === "ECONNREFUSED") {
 			debugLog("Game API", gameApi.url, err.message);
 			response.status(504).json({ message: "Game API offline" });
+			if (!gameApi.timeoutStartTime) {
+				gameApi.timeoutStartTime = Date.now();
+			} else if (Date.now() - gameApi.timeoutStartTime > 1000 * 60) {
+				delete knownGameApis[gameId];
+			}
 		} else if (err.response && err.response.status) {
 			debugLog(
 				"Game API",
