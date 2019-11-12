@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
+import { useLocalStorage } from "@rehooks/local-storage";
 
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
@@ -24,6 +25,7 @@ import SubjectIcon from "@material-ui/icons/Subject";
 import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
 
 import { useInterval, useMountEffect } from "../util/hooks";
+import { useAuthedAxios } from "../util/useAuthedAxios";
 import LogViewer from "./LogViewer";
 import ModsViewer from "./ModsViewer";
 import ConfirmationModal from "./ConfirmationModal";
@@ -54,6 +56,9 @@ export default function ServerCard({
 	const logsUrl = baseUrl + "logs/";
 	const updateUrl = baseUrl + "update/";
 	const modsUrl = baseUrl + "mods/";
+
+	const [isAdmin] = useLocalStorage("isAdmin");
+	const authedAxios = useAuthedAxios();
 
 	const [status, setStatus] = useState("unknown");
 	/** status: PropTypes.oneOf([
@@ -203,6 +208,7 @@ export default function ServerCard({
 				{(status === "starting" || status === "running") && (
 					<Button
 						color="secondary"
+						disabled={!isAdmin && numPlayers > 0}
 						onClick={() => {
 							setStopConfirmationOpen(true);
 						}}
@@ -227,11 +233,11 @@ export default function ServerCard({
 				{supportsUpdate && (
 					<Button
 						size="small"
-						disabled={status !== "stopped"}
+						disabled={!isAdmin || status !== "stopped"}
 						onClick={async () => {
 							const {
 								data: { status: newStatus },
-							} = await axios.post(updateUrl);
+							} = await authedAxios.post(updateUrl);
 							setStatus(newStatus);
 						}}
 					>
@@ -241,7 +247,7 @@ export default function ServerCard({
 				{supportsMods && (
 					<Button
 						size="small"
-						disabled={status !== "stopped"}
+						disabled={!isAdmin || status !== "stopped"}
 						onClick={() => {
 							setModsOpen(true);
 						}}
@@ -277,7 +283,7 @@ export default function ServerCard({
 						onClick={async () => {
 							const {
 								data: { status: newStatus },
-							} = await axios.delete(controlUrl);
+							} = await authedAxios.delete(controlUrl);
 							setStatus(newStatus);
 							setStopConfirmationOpen(false);
 						}}

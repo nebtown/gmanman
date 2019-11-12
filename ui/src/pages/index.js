@@ -7,7 +7,10 @@ import { SnackbarProvider } from "notistack";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
-import ServerCard from "../components/ServerCard";
+
+// Force these components to only be loaded clientside, not during SSR
+const ServerCard = React.lazy(() => import("../components/ServerCard"));
+const LoginButton = React.lazy(() => import("../components/LoginButton"));
 import { useMountEffect } from "../util/hooks";
 
 const titleOptions = [
@@ -22,6 +25,7 @@ function generatePageTitle() {
 }
 
 export default () => {
+	const isSSR = typeof window === "undefined";
 	const {
 		site: {
 			siteMetadata: { title: siteTitle, gatewayUrl },
@@ -68,20 +72,25 @@ export default () => {
 				{siteTitle}
 			</Typography>
 
-			<Grid container spacing={5} component="main">
-				{games.map(({ game, id, name, ...gameProps }) => (
-					<Grid item key={id} xs={12} sm={6} md={4}>
-						<ServerCard
-							game={game}
-							id={id}
-							title={name}
-							icon={`/icons/${game}.png`}
-							baseUrl={`${gatewayUrl}${id}/`}
-							{...gameProps}
-						/>
+			{!isSSR && (
+				<React.Suspense fallback={<div />}>
+					<Grid container spacing={5} component="main">
+						{games.map(({ game, id, name, ...gameProps }) => (
+							<Grid item key={id} xs={12} sm={6} md={4}>
+								<ServerCard
+									game={game}
+									id={id}
+									title={name}
+									icon={`/icons/${game}.png`}
+									baseUrl={`${gatewayUrl}${id}/`}
+									{...gameProps}
+								/>
+							</Grid>
+						))}
 					</Grid>
-				))}
-			</Grid>
+					<LoginButton gatewayUrl={gatewayUrl} />
+				</React.Suspense>
+			)}
 		</Container>
 	);
 	renderedContainer = <SnackbarProvider>{renderedContainer}</SnackbarProvider>;

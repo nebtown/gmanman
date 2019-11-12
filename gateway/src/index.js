@@ -5,18 +5,50 @@ const querystring = require("querystring");
 
 const app = express();
 const { debugLog, listenPort } = require("./cliArgs");
+const {
+	verifyGoogleJWT,
+	isEmailAdmin,
+	checkAuthMiddleware,
+} = require("./lib/login");
 
 let knownGameApis = {};
 
 app.use(express.json());
-app.use(cors()); // enable CORS on all routes
+const corsOptions = {
+	allowedHeaders: ["Content-Type", "Authorization"],
+	maxAge: 3600,
+};
+app.use(cors(corsOptions)); // enable CORS on all routes
 app.use((request, response, next) => {
 	console.log(`- ${request.method} ${request.originalUrl}`);
 	next();
 });
+app.use(
+	checkAuthMiddleware([
+		["DELETE", "/control"],
+		["POST", "/update"],
+		["PUT", "/mods"],
+		["POST", "/backup"],
+	])
+);
 
 app.get("/", (request, response) => {
 	response.json({});
+});
+
+app.post("/auth", async (request, response) => {
+	const token = request.body.id_token;
+	try {
+		const decoded = await verifyGoogleJWT(token);
+		debugLog("/auth verified: ", decoded);
+		response.json({
+			token: decoded,
+			isAdmin: isEmailAdmin(decoded.email),
+		});
+	} catch (err) {
+		console.warn("/auth denied:", err);
+		response.status(403).json({ error: err });
+	}
 });
 
 app.get("/register", (request, response) => {

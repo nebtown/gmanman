@@ -17,6 +17,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import SaveIcon from "@material-ui/icons/Save";
 
 import ModsSearch from "./ModsSearch";
+import { useAuthedAxios } from "../util/useAuthedAxios";
 
 ModsViewer.propTypes = {
 	title: PropTypes.string.isRequired,
@@ -35,6 +36,7 @@ export default function ModsViewer({
 	open,
 	setOpen,
 }) {
+	const authedAxios = useAuthedAxios();
 	const [modsList, setModsList] = useState(null);
 
 	useEffect(() => {
@@ -145,7 +147,7 @@ export default function ModsViewer({
 				</Button>
 				<Button
 					onClick={async () => {
-						await axios.put(modsUrl, { mods: modsList });
+						await authedAxios.put(modsUrl, { mods: modsList });
 						setOpen(false);
 					}}
 					color="primary"
