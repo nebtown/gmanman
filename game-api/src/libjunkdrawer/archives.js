@@ -14,7 +14,7 @@ function generateBackupFilename(gameId, gameDir) {
 	return path.resolve(
 		gameDir,
 		"backups",
-		`${gameId}-backup-${new Date().toISOString()}.7z`
+		`${gameId}-${new Date().toISOString()}.7z`
 	);
 }
 

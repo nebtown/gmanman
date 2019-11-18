@@ -23,11 +23,13 @@ import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
 import PowerIcon from "@material-ui/icons/Power";
 import SubjectIcon from "@material-ui/icons/Subject";
 import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 
 import { useInterval, useMountEffect } from "../util/hooks";
 import { useAuthedAxios } from "../util/useAuthedAxios";
 import LogViewer from "./LogViewer";
 import ModsViewer from "./ModsViewer";
+import BackupsViewer from "./BackupsViewer";
 import ConfirmationModal from "./ConfirmationModal";
 
 ServerCard.propTypes = {
@@ -52,6 +54,7 @@ export default function ServerCard({
 	const supportsLogs = features.includes("logs");
 	const supportsUpdate = features.includes("update");
 	const supportsMods = features.includes("mods");
+	const supportsBackup = features.includes("backup");
 	const controlUrl = baseUrl + "control/";
 	const logsUrl = baseUrl + "logs/";
 	const updateUrl = baseUrl + "update/";
@@ -74,6 +77,7 @@ export default function ServerCard({
 	const [logLines, setLogLines] = useState("");
 	const [modsOpen, setModsOpen] = useState(false);
 	const [stopConfirmationOpen, setStopConfirmationOpen] = useState(false);
+	const [backupsOpen, setBackupsOpen] = useState(false);
 
 	const pollStatus = async () => {
 		if (document.hidden) {
@@ -255,6 +259,19 @@ export default function ServerCard({
 						<ExtensionIcon classes={{ root: "margin-right-2" }} /> Mods
 					</Button>
 				)}
+				{supportsBackup && (
+					<Button
+						size="small"
+						disabled={!isAdmin || status !== "stopped"}
+						onClick={() => {
+							setBackupsOpen(true);
+						}}
+						style={{ minWidth: "initial" }}
+						title="Backups"
+					>
+						<CloudUploadIcon classes={{ root: "margin-right-2" }} />
+					</Button>
+				)}
 			</CardActions>
 			{supportsLogs && (
 				<LogViewer
@@ -272,6 +289,15 @@ export default function ServerCard({
 					supportsModSearch={features.includes("modSearch")}
 					open={modsOpen}
 					setOpen={setModsOpen}
+				/>
+			)}
+			{supportsBackup && (
+				<BackupsViewer
+					title={title}
+					gameId={id}
+					baseUrl={baseUrl}
+					open={backupsOpen}
+					setOpen={setBackupsOpen}
 				/>
 			)}
 			<ConfirmationModal
