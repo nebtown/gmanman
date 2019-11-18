@@ -25,10 +25,10 @@ app.use((request, response, next) => {
 });
 app.use(
 	checkAuthMiddleware([
-		["DELETE", "/control"],
 		["POST", "/update"],
 		["PUT", "/mods"],
 		["POST", "/backup"],
+		["POST", "/restore"],
 	])
 );
 

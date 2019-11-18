@@ -23,5 +23,5 @@ module.exports = {
 	connectUrl: argv.connectUrl,
 	steamApiKey: argv.steamApiKey,
 	saveName: argv.saveName || gameId.replace(new RegExp(`^${game}[\-_]?`), ""),
-	serviceAccount: argv.serviceAccount || "./serviceaccount.json",
+	serviceAccount: argv.serviceAccount || __dirname + "/../serviceaccount.json",
 };

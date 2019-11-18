@@ -30,3 +30,12 @@ Lists existing mods
 Sets the new list of mods, will install/uninstall (or queue to be installed at next startup)
     * `{"mods": [{"id": "honk", "enabled": true}]}`
     * ID's will vary between games, but typically are Steam Workshop ID's
+* `GET /backup`
+Lists backup archives
+    * `{"backups": [{"name": "test-backup-2019-11-18T07:39:00.869Z.7z"}]}`
+* `POST /backup`
+Triggers a new backup + upload
+* `POST /restore`
+Triggers a download + extract
+    * `{"mostRecent": true}`
+    * `{"file": "test-backup-2019-11-18T07:39:00.869Z.7z"}`
