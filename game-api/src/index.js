@@ -3,6 +3,8 @@ const cors = require("cors");
 const gcs = require("./libjunkdrawer/gcs");
 const sevenzip = require("node-7z");
 const axios = require("axios");
+const path = require("path");
+const fsPromises = require("./libjunkdrawer/fsPromises");
 const app = express();
 
 const {
@@ -44,15 +46,33 @@ app.get("/backup", async (request, response) => {
 	if (!gameManager.filesToBackup) {
 		return response.status(501).json({ ok: false, error: "Not Implemented" });
 	}
+	response.json({ backups: await gcs.listFiles(game) });
+});
+
+app.post("/backup", async (request, response) => {
+	if (!gameManager.filesToBackup) {
+		return response.status(501).json({ ok: false, error: "Not Implemented" });
+	}
 	if (await gameManager.isProcessRunning()) {
 		return response.status(412).json({ ok: false, message: "game is running" });
 	}
+	try {
+		await fsPromises.access("backups");
+	} catch {
+		await fsPromises.mkdir("backups");
+	}
 
-	const backupFile = `${game}-backup-${new Date().toISOString()}.7z`;
+	const cwd = process.cwd();
+	const backupFile = path.join(
+		cwd,
+		"backups",
+		`${game}-backup-${new Date().toISOString()}.7z`
+	);
+	process.chdir(gameDir);
 	const stream = sevenzip.add(backupFile, gameManager.filesToBackup(), {
 		timeStats: true,
-		workingDir: gameDir,
 	});
+	process.chdir(cwd);
 
 	const promise = new Promise((resolve, reject) => {
 		stream.on("end", async function() {
@@ -74,6 +94,23 @@ app.get("/backup", async (request, response) => {
 		console.warn(err);
 		response.json(err);
 	}
+});
+
+app.post("/restore", async (request, response) => {
+	let { file, mostRecent } = request.body;
+	if (mostRecent) {
+		const files = await gcs.listFiles(game);
+		file = files[0].name;
+	}
+	try {
+		await fsPromises.access("backups");
+	} catch {
+		await fsPromises.mkdir("backups");
+	}
+	const archiveFile = path.join("backups", file);
+	await gcs.downloadFile(game, file, archiveFile);
+	sevenzip.extractFull(archiveFile, gameDir);
+	response.json({ ok: true });
 });
 
 app.get("/control", async (request, response) => {

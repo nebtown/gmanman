@@ -64,6 +64,6 @@ module.exports = class TestManager {
 		);
 	}
 	filesToBackup() {
-		return [path.join(gameDir, "file1.txt"), path.join(gameDir, "dir1")];
+		return ["file1.txt", "dir1"];
 	}
 };
