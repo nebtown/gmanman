@@ -123,12 +123,12 @@ module.exports = class FactorioManager {
 				id.toLowerCase().includes(query) || label.toLowerCase().includes(query)
 		);
 	}
-	filesToBackup() {
+	async filesToBackup() {
 		return [
-			path.join(gameDir, "volume", "saves"),
-			path.join(gameDir, "volume", "config"),
-			path.join(gameDir, "volume", "mods", "mod-list.json"),
-			path.join(gameDir, "volume", "mods", "mod-settings.dat"),
+			path.join("volume", "saves"),
+			path.join("volume", "config"),
+			path.join("volume", "mods", "mod-list.json"),
+			path.join("volume", "mods", "mod-settings.dat"),
 		];
 	}
 };

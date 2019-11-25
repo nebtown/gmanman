@@ -126,6 +126,17 @@ module.exports = class SpaceEngineersManager {
 	async getModSearch(query) {
 		return steamWorkshopGetModSearch(this.APPID, query);
 	}
+	async filesToBackup() {
+		return [
+			path.join("Instance", "Saves", "LastSession.sbl"),
+			...(await fsPromises.readdir(path.join("Instance", "Saves", saveName)))
+				.filter(file => file !== "Backup")
+				.map(file => path.join("Instance", "Saves", saveName, file)),
+			path.join("Instance", "Storage"),
+			path.join("Instance", "SpaceEngineers-Dedicated.cfg"),
+			path.join("Instance", "appworkshop_244850.acf"),
+		];
+	}
 };
 
 if (!steamApiKey) {

@@ -1,6 +1,8 @@
+const sevenBin = require("7zip-bin");
 const sevenzip = require("node-7z");
 const path = require("path");
 const fsPromises = require("./fsPromises");
+const formatISO = require("date-fns/formatISO");
 
 async function makeBackupsDir(gameDir) {
 	const backupsDir = path.join(gameDir, "backups");
@@ -11,11 +13,10 @@ async function makeBackupsDir(gameDir) {
 }
 
 function generateBackupFilename(gameId, gameDir) {
-	return path.resolve(
-		gameDir,
-		"backups",
-		`${gameId}-${new Date().toISOString()}.7z`
-	);
+	const dateString = formatISO(new Date(), {
+		format: "basic",
+	});
+	return path.resolve(gameDir, "backups", `${gameId}-${dateString}.7z`);
 }
 
 async function makeBackup(backupFile, gameDir, filesToBackup) {
@@ -25,6 +26,7 @@ async function makeBackup(backupFile, gameDir, filesToBackup) {
 	process.chdir(gameDir);
 	const stream = sevenzip.add(backupFile, filesToBackup, {
 		timeStats: true,
+		$bin: sevenBin.path7za,
 	});
 	process.chdir(cwd);
 
@@ -40,7 +42,9 @@ async function makeBackup(backupFile, gameDir, filesToBackup) {
 }
 
 function extractArchive(archiveFile, destinationDir) {
-	sevenzip.extractFull(archiveFile, destinationDir);
+	sevenzip.extractFull(archiveFile, destinationDir, {
+		$bin: sevenBin.path7za,
+	});
 }
 
 module.exports = {

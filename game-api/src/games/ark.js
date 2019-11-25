@@ -72,7 +72,7 @@ module.exports = class ArkManager {
 		await writeEnvFileCsv("ARK_MODS", modsList);
 		return true;
 	}
-	filesToBackup() {
-		return [path.join(gameDir, "Saved"), path.join(gameDir, ".env")];
+	async filesToBackup() {
+		return ["Saved", ".env"];
 	}
 };

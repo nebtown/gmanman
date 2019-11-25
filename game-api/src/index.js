@@ -58,7 +58,11 @@ app.post("/backup", async (request, response) => {
 
 	const backupFile = archives.generateBackupFilename(gameId, gameDir);
 	try {
-		await archives.makeBackup(backupFile, gameDir, gameManager.filesToBackup());
+		await archives.makeBackup(
+			backupFile,
+			gameDir,
+			await gameManager.filesToBackup()
+		);
 		await gcs.uploadFile(game, backupFile);
 		response.json({ ok: true });
 	} catch (err) {
