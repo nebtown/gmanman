@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const expressTimeoutHandler = require("express-timeout-handler");
 const gcs = require("./libjunkdrawer/gcs");
 const archives = require("./libjunkdrawer/archives");
 const axios = require("axios");
@@ -17,6 +18,16 @@ const {
 	gatewayUrl,
 } = require("./cliArgs");
 
+const successTimeoutHandler = expressTimeoutHandler.handler({
+	timeout: 4000,
+	onTimeout: function(req, res) {
+		res.status(200).json({ pending: true });
+	},
+	onDelayedResponse: function(req, method, args, requestTime) {
+		const reqString = `${req.method} ${req.originalUrl}`;
+		console.log(`${reqString} responded late (${requestTime / 1000}s)`);
+	},
+});
 app.use(express.json());
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
@@ -48,7 +59,7 @@ app.get("/backup", async (request, response) => {
 	response.json({ backups: await gcs.listFiles(game) });
 });
 
-app.post("/backup", async (request, response) => {
+app.post("/backup", successTimeoutHandler, async (request, response) => {
 	if (!gameManager.filesToBackup) {
 		return response.status(501).json({ ok: false, error: "Not Implemented" });
 	}
@@ -71,7 +82,7 @@ app.post("/backup", async (request, response) => {
 	}
 });
 
-app.post("/restore", async (request, response) => {
+app.post("/restore", successTimeoutHandler, async (request, response) => {
 	let { file, mostRecent } = request.body;
 	if (mostRecent) {
 		const files = await gcs.listFiles(game);

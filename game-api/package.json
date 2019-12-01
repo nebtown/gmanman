@@ -17,6 +17,7 @@
     "dockerode": "^3.0.1",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
+    "express-timeout-handler": "^2.2.0",
     "gamedig": "^2.0.16",
     "minimist": "^1.2.0",
     "modern-rcon": "^1.0.3",
