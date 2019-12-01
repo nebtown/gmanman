@@ -4,6 +4,7 @@ const stripAnsi = require("strip-ansi");
 const axios = require("axios");
 const docker = new (require("dockerode"))();
 
+const { jsonPretty } = require("../libjunkdrawer/jsonPretty");
 const { gameDir, debugLog, connectUrl } = require("../cliArgs");
 const {
 	dockerComposeStart,
@@ -33,14 +34,14 @@ module.exports = class FactorioManager {
 	async getPlayerCount() {
 		let playerList;
 		try {
-			playerList = await (await rconConnect(34198)).send("/players");
+			playerList = await (await rconConnect(34198)).send("/players online");
 		} catch (e) {
 			debugLog("rcon", e.message);
 			return false;
 		}
-		const matches = playerList.match(/Players \((\d+)\):/);
+		const matches = playerList.match(/Online players \((\d+)\):/);
 		if (!matches) {
-			console.warn("playerList: ", playerList);
+			console.warn("unexpected playerList:", playerList);
 			return false;
 		}
 		return Number(matches[1]);
@@ -87,7 +88,7 @@ module.exports = class FactorioManager {
 		try {
 			await fsPromises.writeFile(
 				path.join(gameDir, "volume", "mods", "mod-list.json"),
-				JSON.stringify({
+				jsonPretty({
 					mods: [...modsList, { id: "base", enabled: true }].map(
 						({ id, enabled }) => ({
 							name: id,
@@ -124,8 +125,17 @@ module.exports = class FactorioManager {
 		);
 	}
 	async filesToBackup() {
+		const saves = (await Promise.all(
+			(await fsPromises.readdir(path.join("volume", "saves"))).map(async v => ({
+				name: v,
+				time: (await fsPromises.stat(
+					path.join("volume", "saves", v)
+				)).mtime.getTime(),
+			}))
+		)).sort((a, b) => -(a.time - b.time));
+
 		return [
-			path.join("volume", "saves"),
+			path.join("volume", "saves", saves[0].name),
 			path.join("volume", "config"),
 			path.join("volume", "mods", "mod-list.json"),
 			path.join("volume", "mods", "mod-settings.dat"),

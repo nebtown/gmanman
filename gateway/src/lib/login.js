@@ -8,6 +8,11 @@ const googleJWKSClient = jwksClient({
 });
 function getGoogleJWTKey(header, callback) {
 	googleJWKSClient.getSigningKey(header.kid, function(err, key) {
+		if (err) {
+			console.log("failed getting Google JWT Key:", err);
+			callback(err);
+			return;
+		}
 		const signingKey = key.publicKey || key.rsaPublicKey;
 		callback(null, signingKey);
 	});

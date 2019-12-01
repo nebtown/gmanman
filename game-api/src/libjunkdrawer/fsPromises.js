@@ -7,6 +7,7 @@ module.exports = {
 	mkdir: util.promisify(fs.mkdir),
 	access: util.promisify(fs.access),
 	readdir: util.promisify(fs.readdir),
+	stat: util.promisify(fs.stat),
 };
 
 module.exports.exists = async fileName => {
