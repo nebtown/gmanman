@@ -1,16 +1,36 @@
 html {
-    background-color: #f5f5f5;
-    margin-top: 16px;
+	background-color: #f5f5f5;
+	margin-top: 16px;
 }
 
 .game-card {
-    .game-icon {
-        width: 100px;
-        height: 100px;
-        margin: -16px 16px -8px 16px;
-    }
+	.game-icon {
+		width: 100px;
+		height: 100px;
+		margin: -16px 16px -8px 16px;
+		-webkit-filter: drop-shadow(4px 4px 2px rgba(0, 0, 0, 1));
+		&:hover {
+			animation: wobble-vertical 0.8s linear;
+		}
+	}
+	&.starting .game-icon {
+		animation: wobble-vertical 0.8s linear 0s infinite;
+	}
+}
+@keyframes wobble-vertical {
+	0% {
+		transform: translateY(0);
+		animation-timing-function: cubic-bezier(0.33333, 0.66667, 0.66667, 1);
+	}
+	69.0983% {
+		transform: translateY(-16px);
+		animation-timing-function: cubic-bezier(0.33333, 0, 0.66667, 0.33333);
+	}
+	100% {
+		transform: translateY(0);
+	}
 }
 
 .margin-right-2 {
-    margin-right: 2px;
+	margin-right: 2px;
 }

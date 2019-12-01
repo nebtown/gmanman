@@ -161,7 +161,7 @@ export default function ServerCard({
 	return (
 		<Card
 			raised={["starting", "running", "stopping", "updating"].includes(status)}
-			className="game-card"
+			className={`game-card ${status}`}
 		>
 			<CardHeader title={title} />
 			<CardContent>
@@ -180,7 +180,9 @@ export default function ServerCard({
 										{statusMessage}
 										{status === "running" &&
 											numPlayers !== -1 &&
-											` with ${numPlayers} players`}
+											` with ${
+												numPlayers !== undefined ? numPlayers : "?"
+											} players`}
 									</Grid>
 								</Grid>
 							</Grid>
