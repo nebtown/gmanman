@@ -2,7 +2,7 @@ const stripAnsi = require("strip-ansi");
 const docker = new (require("dockerode"))();
 const path = require("path");
 
-const { game, gameDir, debugLog, connectUrl } = require("../cliArgs");
+const { gameId, gameDir, debugLog, connectUrl } = require("../cliArgs");
 const {
 	dockerComposeStart,
 	dockerComposeStop,
@@ -33,7 +33,7 @@ module.exports = class ArkManager {
 		// in theory the game has rcon 32330, but it wasn't seeming to work...
 
 		let response;
-		const container = docker.getContainer(game);
+		const container = docker.getContainer(gameId);
 		try {
 			const exec = await container.exec({
 				AttachStdout: true,

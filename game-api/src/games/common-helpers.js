@@ -6,16 +6,16 @@ const Rcon = require("modern-rcon");
 const axios = require("axios");
 const docker = new (require("dockerode"))();
 
-const { game, gameDir, debugLog, argv, steamApiKey } = require("../cliArgs");
+const { gameId, gameDir, debugLog, argv, steamApiKey } = require("../cliArgs");
 
 function dockerComposeStart() {
 	compose.upAll({ dir: gameDir });
 }
 function dockerComposeStop() {
-	compose.stop({ dir: gameDir });
+	compose.down({ dir: gameDir });
 }
 async function dockerIsProcessRunning() {
-	const container = docker.getContainer(game);
+	const container = docker.getContainer(gameId);
 	return await container
 		.inspect()
 		.then(containerDetails => containerDetails.State.Running)
@@ -23,7 +23,7 @@ async function dockerIsProcessRunning() {
 }
 async function dockerLogs() {
 	try {
-		const container = docker.getContainer(game);
+		const container = docker.getContainer(gameId);
 		return (await container.logs({ stdout: true, tail: 100 })).toString();
 	} catch (err) {
 		console.warn("logs:", err.message);

@@ -5,7 +5,7 @@ const axios = require("axios");
 const docker = new (require("dockerode"))();
 
 const { jsonPretty } = require("../libjunkdrawer/jsonPretty");
-const { gameDir, debugLog, connectUrl } = require("../cliArgs");
+const { gameId, gameDir, debugLog, connectUrl } = require("../cliArgs");
 const {
 	dockerComposeStart,
 	dockerComposeStop,
@@ -57,7 +57,7 @@ module.exports = class FactorioManager {
 		docker.pull("factoriotools/factorio");
 		docker
 			.run("factoriotools/factorio", [], [], {
-				name: "factorio",
+				name: gameId,
 				Entrypoint: ["./docker-update-mods.sh"],
 				HostConfig: {
 					Binds: [`${gameDir}volume:/factorio`],
