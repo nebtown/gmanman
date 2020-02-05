@@ -1,0 +1,31 @@
+html {
+	background: linear-gradient(
+		180deg,
+		rgba(94, 214, 114, 1) 0%,
+		rgba(0, 212, 255, 1) 100%
+	);
+}
+
+.marquee {
+	overflow: hidden;
+}
+.marquee span {
+	display: inline-block;
+	text-indent: 0;
+	overflow: hidden;
+	-webkit-transition: 15s;
+	transition: 15s;
+	-webkit-animation: marquee 15s linear infinite;
+	animation: marquee 15s linear infinite;
+}
+
+@keyframes marquee {
+	0% {
+		transform: translate(100vw, 0);
+		-webkit-transform: translateX(100vw);
+	}
+	100% {
+		transform: translate(-100%, 0);
+		-webkit-transform: translateX(-100%);
+	}
+}

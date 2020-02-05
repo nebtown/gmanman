@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import axios from "axios";
+import classNames from "classnames";
 import { graphql, useStaticQuery } from "gatsby";
 import { Helmet } from "react-helmet";
 import { SnackbarProvider } from "notistack";
 
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
 
 // Force these components to only be loaded clientside, not during SSR
 const ServerCard = React.lazy(() => import("../components/ServerCard"));
 const LoginButton = React.lazy(() => import("../components/LoginButton"));
 import { useMountEffect } from "../util/hooks";
+import CardContent from "@material-ui/core/CardContent";
+import Card from "@material-ui/core/Card";
 
 const titleOptions = [
 	"GmanMan 2: Eclectic Boogaloo",
-	"GmanMan: mostly functional",
+	"GmanMan: mostly harmless",
+	"GmanMan Season 3",
 	"GmanMan: sew much more than a fabric store",
 	"GmanMan and other ores",
 ];
@@ -55,6 +58,8 @@ export default () => {
 		setInterval(updateRegisteredGames, 10 * 1000);
 	});
 
+	const april1 = !isSSR && window.april1;
+
 	let renderedContainer = (
 		<Container>
 			<Helmet>
@@ -69,13 +74,40 @@ export default () => {
 				/>
 			</Helmet>
 			<div
+				className={classNames({ marquee: april1 })}
 				style={{
 					marginBottom: 8,
+					position: "relative",
 				}}
 			>
-				<img src="/icons/gmanman_gears.png" height={64} />{" "}
-				<img src="/icons/gmanman_title.png" height={64} alt={siteTitle} />
+				<span>
+					<img src="/icons/gmanman_gears.png" height={64} />{" "}
+					<img src="/icons/gmanman_title.png" height={64} alt={siteTitle} />
+					{april1 && (
+						<img
+							src="/con2.gif"
+							style={{ position: "absolute", bottom: 0, left: 200 }}
+						/>
+					)}
+				</span>
 			</div>
+			{april1 && (
+				<>
+					<div style={{ textAlign: "center" }}>
+						{[...new Array(9)].map(i => (
+							<img key={i} src="/con4.gif" />
+						))}
+					</div>
+					<img
+						src="/con1.gif"
+						style={{ position: "absolute", top: 100, right: 30 }}
+					/>
+					<img
+						src="/con1.gif"
+						style={{ position: "absolute", top: 100, left: 30 }}
+					/>
+				</>
+			)}
 
 			{!isSSR && (
 				<React.Suspense fallback={<div />}>
@@ -92,6 +124,16 @@ export default () => {
 								/>
 							</Grid>
 						))}
+
+						{april1 && (
+							<Grid item xs={12} sm={6} md={4}>
+								<Card className={`game-card`}>
+									<CardContent>
+										<img src="/con3.gif" />
+									</CardContent>
+								</Card>
+							</Grid>
+						)}
 					</Grid>
 					<LoginButton gatewayUrl={gatewayUrl} />
 				</React.Suspense>
