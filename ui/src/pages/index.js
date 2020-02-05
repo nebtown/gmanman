@@ -68,9 +68,14 @@ export default () => {
 					href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap"
 				/>
 			</Helmet>
-			<Typography variant="h3" color="inherit" gutterBottom>
-				{siteTitle}
-			</Typography>
+			<div
+				style={{
+					marginBottom: 8,
+				}}
+			>
+				<img src="/icons/gmanman_gears.png" height={64} />{" "}
+				<img src="/icons/gmanman_title.png" height={64} alt={siteTitle} />
+			</div>
 
 			{!isSSR && (
 				<React.Suspense fallback={<div />}>
