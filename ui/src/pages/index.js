@@ -4,6 +4,7 @@ import classNames from "classnames";
 import { graphql, useStaticQuery } from "gatsby";
 import { Helmet } from "react-helmet";
 import { SnackbarProvider } from "notistack";
+import queryString from "query-string";
 
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -22,6 +23,7 @@ const titleOptions = [
 	"GmanMan: sew much more than a fabric store",
 	"GmanMan and other ores",
 ];
+const pageRandom = Math.random();
 
 function generatePageTitle() {
 	return titleOptions[Math.floor(Math.random() * titleOptions.length)];
@@ -58,7 +60,11 @@ export default () => {
 		setInterval(updateRegisteredGames, 10 * 1000);
 	});
 
-	const april1 = !isSSR && window.april1;
+	const query = queryString.parse(!isSSR && location.search);
+	const april1 =
+		query.better ||
+		(new Date().getMonth() + 1 === 4 && new Date().getDay() === 1) ||
+		pageRandom < 0.02;
 
 	let renderedContainer = (
 		<Container>
@@ -72,6 +78,7 @@ export default () => {
 					rel="stylesheet"
 					href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap"
 				/>
+				{april1 && <script src="/april1.css" />}
 			</Helmet>
 			<div
 				className={classNames({ marquee: april1 })}
