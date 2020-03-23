@@ -48,6 +48,7 @@ function getCurrentStatus() {
 }
 
 const gameManager = new (require("./games/" + game))({
+	gameDir,
 	getCurrentStatus,
 	setStatus,
 });
@@ -60,25 +61,35 @@ app.get("/backup", async (request, response) => {
 });
 
 app.post("/backup", successTimeoutHandler, async (request, response) => {
-	if (!gameManager.filesToBackup) {
-		return response.status(501).json({ ok: false, error: "Not Implemented" });
-	}
-	if (await gameManager.isProcessRunning()) {
-		return response.status(412).json({ ok: false, error: "game is running" });
-	}
+    // Support both versions of backups.
+	if (gameManager.backup) {
+            try {
+                await gameManager.backup(gameDir);
+                response.json({ ok: true });
+            } catch (err) {
+                console.warn("Backup error: ", err.message);
+                response.status(500).json({ ok: false, error: err.message });
+            }
+	} else if (gameManager.filesToBackup) {
+		if (await gameManager.isProcessRunning()) {
+    		return response.status(412).json({ ok: false, error: "game is running" });
+    	}
 
-	const backupFile = archives.generateBackupFilename(gameId, gameDir);
-	try {
-		await archives.makeBackup(
-			backupFile,
-			gameDir,
-			await gameManager.filesToBackup()
-		);
-		await gcs.uploadFile(game, backupFile);
-		response.json({ ok: true });
-	} catch (err) {
-		console.warn("Backup error: ", err.message, backupFile);
-		response.status(500).json({ ok: false, error: err.message });
+        const backupFileName = archives.generateBackupFilename(gameId, gameDir);
+        try {
+            await archives.makeBackup(
+                backupFile,
+                gameDir,
+                await gameManager.filesToBackup()
+            );
+            await gcs.uploadFile(game, backupFileName);
+            response.json({ ok: true });
+        } catch (err) {
+            console.warn("Backup error: ", err.message, backupFile);
+            response.status(500).json({ ok: false, error: err.message });
+        }
+	} else {
+		return response.status(501).json({ ok: false, error: "Not Implemented" });
 	}
 });
 
