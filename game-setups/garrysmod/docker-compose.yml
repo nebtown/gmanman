@@ -1,0 +1,20 @@
+version: '2'
+services:
+  garrysmod:
+    build:
+      context: .
+    container_name: garrysmod
+    image: garrysmod
+    privileged: true
+    tty: true
+    stdin_open: true
+    restart: on-failure
+    ports:
+      - "27015:27015/udp" # game
+      - "27015:27015/tcp" # rcon
+      - "27079:27079/tcp" # Slack integration
+    volumes:
+      - ./volume:/gmod-volume
+    environment:
+      - MAP=gm_excess_construct_13
+      - WORKSHOP_COLLECTION=162198121

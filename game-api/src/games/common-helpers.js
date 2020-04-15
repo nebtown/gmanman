@@ -3,16 +3,30 @@ const path = require("path");
 const dotenv = require("dotenv");
 const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
+const srcdsRcon = require("srcds-rcon");
 const axios = require("axios");
 const docker = new (require("dockerode"))();
 
-const { gameId, gameDir, debugLog, argv, steamApiKey } = require("../cliArgs");
+const {
+	game,
+	gameId,
+	gameDir,
+	debugLog,
+	argv,
+	steamApiKey,
+} = require("../cliArgs");
 
 function dockerComposeStart() {
 	compose.upAll({ dir: gameDir });
 }
 function dockerComposeStop() {
 	compose.down({ dir: gameDir });
+}
+function dockerComposeBuild(params) {
+	return compose.buildOne(game, {
+		dir: gameDir,
+		...params,
+	});
 }
 async function dockerIsProcessRunning() {
 	const container = docker.getContainer(gameId);
@@ -37,6 +51,15 @@ async function rconConnect(port) {
 		await this.rcon.connect();
 	}
 	return this.rcon;
+}
+
+async function rconSRCDSConnect(port) {
+	const rcon = srcdsRcon({
+		address: `localhost:${port}`,
+		password: argv.rconPassword || "",
+	});
+	await rcon.connect();
+	return rcon;
 }
 
 async function readEnvFileCsv(envName) {
@@ -141,9 +164,11 @@ async function steamWorkshopGetModSearch(appid, query) {
 module.exports = {
 	dockerComposeStart,
 	dockerComposeStop,
+	dockerComposeBuild,
 	dockerIsProcessRunning,
 	dockerLogs,
 	rconConnect,
+	rconSRCDSConnect,
 	readEnvFileCsv,
 	writeEnvFileCsv,
 	steamWorkshopGetModSearch,

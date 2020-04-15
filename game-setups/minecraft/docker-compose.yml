@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 
 services:
   minecraft:
@@ -6,12 +6,7 @@ services:
       context: .
     container_name: "minecraft"
     image: minecraft
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
+    restart: on-failure
     ports:
       - "25565:25565"
       - "8123:8123"

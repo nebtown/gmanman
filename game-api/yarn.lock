@@ -2200,6 +2200,11 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
 
+srcds-rcon@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/srcds-rcon/-/srcds-rcon-2.2.1.tgz#6fb01928420addda2b87d97e31a0d607e9ab8027"
+  integrity sha1-b7AZKEIK3dorh9l+MaDWB+mrgCc=
+
 ssh2-streams@~0.4.4:
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/ssh2-streams/-/ssh2-streams-0.4.6.tgz#1ef0bca163141b4baedf047c8429e48be8c2d99d"

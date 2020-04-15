@@ -7,6 +7,7 @@
   - Space Engineers
   - Ark
   - Factorio
+  - Garry's Mod
 - Start server button
   - stop server, disabled if numPlayers > 0, unless admin override
 - Show status + player count
@@ -18,7 +19,5 @@
 
 ## Todo:
 
-- Additional Game Servers:
-  - Garry's Mod
 - auto save/backup
 - chat
