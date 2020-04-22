@@ -65,7 +65,7 @@ async function sendMessage(nickname, message) {
 		if (nickname !== lastNickname) {
 			await mainChannel.guild.me.setNickname(nickname);
 		}
-		if (message.includes("://")) {
+		if (message.match(/]\(https?:\/\//)) {
 			const embed = new Discord.MessageEmbed().setDescription(message);
 			await mainChannel.send(embed);
 		} else {
