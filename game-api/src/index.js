@@ -112,7 +112,9 @@ app.post("/restore", successTimeoutHandler, async (request, response) => {
 
 app.get("/control", async (request, response) => {
 	if (["unknown", "starting", "running", "stopped"].includes(currentStatus)) {
-		let playerCount = await gameManager.getPlayerCount();
+		let playerCount =
+			(await gameManager.isProcessRunning()) &&
+			(await gameManager.getPlayerCount());
 		if (playerCount !== false) {
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
