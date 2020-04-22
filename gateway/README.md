@@ -22,5 +22,6 @@
       ]}
       ```
 * `PUT /register/` Registers a Game API
+* `POST /messages/ {message: '[Neb]: Hi', nick: 'Gmod'}` Communicates with Discord/etc
 * `{METHOD} /{gameId}/{endpoint}`
 will be proxied to that Game API's endpoint

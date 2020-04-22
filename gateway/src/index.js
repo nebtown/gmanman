@@ -36,6 +36,9 @@ app.get("/", (request, response) => {
 	response.json({});
 });
 
+const { router: messagesRouter, sendMessage } = require("./routes/messages");
+app.use("/messages", messagesRouter);
+
 app.post("/auth", async (request, response) => {
 	const token = request.body.id_token;
 	try {

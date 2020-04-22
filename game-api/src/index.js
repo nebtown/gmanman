@@ -47,6 +47,16 @@ function getCurrentStatus() {
 	return currentStatus;
 }
 
+function sendSystemChat(message) {
+	axios
+		.post(`${gatewayUrl}messages/`, {
+			message,
+		})
+		.catch(err => {
+			console.error("Failed to register with Gateway", err.message);
+		});
+}
+
 const gameManager = new (require("./games/" + game))({
 	getCurrentStatus,
 	setStatus,
@@ -101,13 +111,20 @@ app.post("/restore", successTimeoutHandler, async (request, response) => {
 });
 
 app.get("/control", async (request, response) => {
-	if (["unknown", "starting", "running"].includes(currentStatus)) {
+	if (["unknown", "starting", "running", "stopped"].includes(currentStatus)) {
 		let playerCount = await gameManager.getPlayerCount();
 		if (playerCount !== false) {
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
 			);
-			currentStatus = "running";
+			if (currentStatus !== "running") {
+				currentStatus = "running";
+
+				const connectText =
+					gameManager.getConnectUrl &&
+					`, [connect](${gameManager.getConnectUrl()})`;
+				sendSystemChat(`${gameName} is up${connectText}!`);
+			}
 			return response.json({ status: currentStatus, playerCount });
 		}
 	}
@@ -140,6 +157,9 @@ app.delete("/control", (request, response) => {
 	if (["starting", "running", "unknown"].includes(currentStatus)) {
 		currentStatus = "stopping";
 		gameManager.stop();
+		sendSystemChat(
+			`${gameName} is shutting down. ${Math.random() < 0.1 && "Forever."}`
+		);
 	}
 	response.json({ status: currentStatus });
 });
