@@ -49,7 +49,7 @@ module.exports = class GarrysmodManager {
 		if (this.getCurrentStatus() === "updating") {
 			return logs;
 		}
-		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
+		return stripAnsi(logs);
 	}
 	update() {
 		dockerComposeBuild({
