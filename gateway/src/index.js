@@ -1,4 +1,5 @@
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 const axios = require("axios");
 const querystring = require("querystring");
@@ -36,7 +37,11 @@ app.get("/", (request, response) => {
 	response.json({});
 });
 
-const { router: messagesRouter, sendMessage } = require("./routes/messages");
+const {
+	router: messagesRouter,
+	sendMessage,
+	initWebsocketListener,
+} = require("./routes/messages");
 app.use("/messages", messagesRouter);
 
 app.post("/auth", async (request, response) => {
@@ -129,5 +134,7 @@ app.all("/:gameId/*", async (request, response) => {
 	}
 });
 
-app.listen(listenPort);
+const httpServer = http.createServer(app);
+httpServer.listen(listenPort);
+initWebsocketListener(httpServer);
 console.log(`Gateway listening on port ${listenPort}`);

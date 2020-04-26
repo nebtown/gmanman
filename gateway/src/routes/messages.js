@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const WebSocket = require("ws");
 
 const Discord = require("discord.js");
 const client = new Discord.Client();
@@ -20,17 +21,34 @@ client.on("ready", async () => {
 
 client.on("message", msg => {
 	msg = /** @type Message */ msg;
-	if (msg.content.match(/\bGman\b/i)) {
-		if (msg.content.match(/\bjake\b/i)) {
-			return msg.reply("lolpants");
+	if (msg.author.id === client.user.id) {
+		return;
+	}
+	const msgContainsGman = msg.content.match(/\bGman\b/i);
+	if (msgContainsGman) {
+		if (msg.content.match(/\bbridgeport\b/i)) {
+			msg.reply("Bridgeport is alive and well :wink:");
 		}
 		if (msg.content.match(/\bwho\b.*\bam\b.*\bi\b/i)) {
 			// Send the user's avatar URL
-			return msg.reply(msg.author.displayAvatarURL());
+			msg.reply(msg.author.displayAvatarURL());
 		}
 	}
-	if (msg.channel.id === mainChannel.id) {
-		debugLog(`Heard ${msg.author.username}: ${msg.content}`);
+	if (msgContainsGman || msg.channel.id === mainChannel.id) {
+		debugLog(
+			`WS: Heard ${msg.author.username}: ${msg.content} (${wsConnections.length} clients)`
+		);
+		wsConnections.forEach(wsConnection => {
+			wsConnection.send(
+				JSON.stringify({
+					type: "message",
+					name: msg.author.username,
+					message: msg.content,
+					channel: (msg.channel || {}).id,
+					channelName: (msg.channel || {}).name,
+				})
+			);
+		});
 	}
 });
 
@@ -58,12 +76,14 @@ async function sendMessage(nickname, message) {
 	if (!mainChannel) {
 		return console.warn("Discord: Not connected to channel");
 	}
-	if (!nickname) {
-		nickname = "Gman";
+	let discordNickname = "Gman";
+	if (nickname !== "Gman") {
+		message = `${nickname}: ${message}`;
 	}
 	try {
-		if (nickname !== lastNickname) {
-			await mainChannel.guild.me.setNickname(nickname);
+		if (discordNickname !== lastNickname) {
+			lastNickname = discordNickname;
+			await mainChannel.guild.me.setNickname(discordNickname);
 		}
 		if (message.match(/]\(https?:\/\//)) {
 			const embed = new Discord.MessageEmbed().setDescription(message);
@@ -76,4 +96,39 @@ async function sendMessage(nickname, message) {
 	}
 }
 
-module.exports = { router, sendMessage };
+const wsServer = new WebSocket.Server({ noServer: true });
+const wsConnections = [];
+
+wsServer.on("connection", ws => {
+	ws.on("message", message => {
+		console.debug(`WS Received: ${message}`);
+		const request = JSON.parse(message);
+		if (request.type === "message") {
+			const { name, message, avatar } = request;
+			sendMessage(name, message);
+		} else if (request.type === "ping") {
+			ws.send(JSON.stringify({ type: "pong" }));
+		} else if (request.type === "pong") {
+			console.debug("WS received (ping) pong, all is well");
+		} else {
+			console.warn(`WS unhandled message: ${message}`);
+		}
+	});
+	ws.on("close", () => {
+		console.debug("WS Closing");
+		wsConnections.splice(wsConnections.indexOf(ws), 1);
+	});
+	console.debug("WS connection opened");
+	ws.send(JSON.stringify({ type: "ping" }));
+	wsConnections.push(ws);
+});
+
+function initWebsocketListener(httpServer) {
+	httpServer.on("upgrade", (req, socket, head) => {
+		wsServer.handleUpgrade(req, socket, head, ws => {
+			wsServer.emit("connection", ws, req);
+		});
+	});
+}
+
+module.exports = { router, sendMessage, initWebsocketListener };
