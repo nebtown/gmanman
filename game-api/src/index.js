@@ -160,7 +160,7 @@ app.delete("/control", (request, response) => {
 		currentStatus = "stopping";
 		gameManager.stop();
 		sendSystemChat(
-			`${gameName} is shutting down. ${Math.random() < 0.1 && "Forever."}`
+			`${gameName} is shutting down. ${Math.random() < 0.1 ? "Forever." : ""}`
 		);
 	}
 	response.json({ status: currentStatus });

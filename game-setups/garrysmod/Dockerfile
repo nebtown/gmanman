@@ -32,4 +32,4 @@ RUN mkdir -p /root/.steam/sdk32/ && \
 #RUN cp ${STEAMCMDDIR}/linux32/libstdc++.so.6 /gmod-base/bin/ # Seems unnessisary, and prevents loading gmsv_gwsockets_linux.dll
 
 ADD entrypoint.sh /entrypoint.sh
-CMD ["/bin/sh", "/entrypoint.sh"]
+CMD ["/bin/bash", "/entrypoint.sh"]
