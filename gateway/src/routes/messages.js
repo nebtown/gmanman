@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const WebSocket = require("ws");
+const fs = require("fs");
 
 const Discord = require("discord.js");
 const client = new Discord.Client();
@@ -32,6 +33,17 @@ client.on("message", msg => {
 		if (msg.content.match(/\bwho\b.*\bam\b.*\bi\b/i)) {
 			// Send the user's avatar URL
 			msg.reply(msg.author.displayAvatarURL());
+		}
+		const nextMapMatch = msg.content.match(
+			/\bnext ?map\b.+?\b([a-z]+_[a-z0-9_]+)\b/
+		);
+		if (nextMapMatch && msg.content.match(/bridge/i)) {
+			fs.writeFile(
+				"/servers/gmod-docker-overrides/garrysmod/data/nextmap.txt",
+				nextMapMatch[1],
+				err => console.error("Failed to write nextmap.txt: ", err)
+			);
+			msg.reply(`Next map queued: ${nextMapMatch[1]}`);
 		}
 	}
 	if (msgContainsGman || msg.channel.id === mainChannel.id) {
@@ -77,7 +89,7 @@ async function sendMessage(nickname, message) {
 		return console.warn("Discord: Not connected to channel");
 	}
 	let discordNickname = "Gman";
-	if (nickname !== "Gman") {
+	if (nickname && nickname !== "Gman") {
 		message = `${nickname}: ${message}`;
 	}
 	try {
