@@ -1,4 +1,5 @@
 const stripAnsi = require("strip-ansi");
+const Gamedig = require("gamedig");
 
 const { gameId, gameDir, debugLog, connectUrl } = require("../cliArgs");
 const {
@@ -30,19 +31,17 @@ module.exports = class GarrysmodManager {
 		return dockerIsProcessRunning();
 	}
 	async getPlayerCount() {
-		let playerList;
 		try {
-			playerList = await (await rconSRCDSConnect(27015)).command("status", 500);
-		} catch (e) {
-			debugLog("rcon", e.message);
+			const response = await Gamedig.query({
+				type: "garrysmod",
+				host: `localhost`,
+				socketTimeout: 750,
+			});
+			return response.players.length;
+		} catch (err) {
+			debugLog(`Gmod getPlayerCount err: ${err}`);
 			return false;
 		}
-		const matches = playerList.match(/players\s*: (\d+)/);
-		if (!matches) {
-			console.warn("unexpected playerList:", playerList);
-			return false;
-		}
-		return Number(matches[1]);
 	}
 	async logs() {
 		const logs = await dockerLogs();
