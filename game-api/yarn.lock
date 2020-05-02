@@ -922,6 +922,11 @@ event-to-promise@^0.7.0:
   resolved "https://registry.yarnpkg.com/event-to-promise/-/event-to-promise-0.7.0.tgz#cb07dfcd418da2221d90f77eab713bc235e2090f"
   integrity sha1-ywffzUGNoiIdkPd+q3E7wjXiCQ8=
 
+express-prettify@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/express-prettify/-/express-prettify-0.1.1.tgz#a6cbbcd3989a7452e79bb9a3e4c47b2c27494804"
+  integrity sha512-AtLYJhseS9bIwkG+tqSn4OKr7RJ8fxJ+/P8SDZ9XdcMiGPvi633c2YC8QaHJKokyffd6sHxSuyZ/eWwDX6kOpw==
+
 express-timeout-handler@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/express-timeout-handler/-/express-timeout-handler-2.2.0.tgz#fca34618f02dc4b28b94761ed18762f821f702cb"

@@ -1,4 +1,5 @@
 const express = require("express");
+const pretty = require("express-prettify");
 const cors = require("cors");
 const expressTimeoutHandler = require("express-timeout-handler");
 const gcs = require("./libjunkdrawer/gcs");
@@ -29,6 +30,7 @@ const successTimeoutHandler = expressTimeoutHandler.handler({
 	},
 });
 app.use(express.json());
+app.use(pretty({ query: "pretty" }));
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
 	console.log(`- ${request.method} ${request.originalUrl}`);

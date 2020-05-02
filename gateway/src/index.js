@@ -1,4 +1,5 @@
 const express = require("express");
+const pretty = require("express-prettify");
 const http = require("http");
 const cors = require("cors");
 const axios = require("axios");
@@ -15,6 +16,7 @@ const {
 let knownGameApis = {};
 
 app.use(express.json());
+app.use(pretty({ query: "pretty" }));
 const corsOptions = {
 	allowedHeaders: ["Content-Type", "Authorization"],
 	maxAge: 3600,
