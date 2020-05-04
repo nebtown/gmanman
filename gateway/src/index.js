@@ -32,6 +32,7 @@ app.use(
 		["PUT", "/mods"],
 		["POST", "/backup"],
 		["POST", "/restore"],
+		["POST", "/rcon"],
 	])
 );
 

@@ -50,6 +50,21 @@ module.exports = class GarrysmodManager {
 		}
 		return stripAnsi(logs);
 	}
+
+	async rcon(command) {
+		debugLog(`Running rcon: ${command}`);
+		try {
+			const response = await (await rconSRCDSConnect(27015)).command(
+				command,
+				500
+			);
+			debugLog(`Rcon response: ${response}`);
+			return true;
+		} catch (e) {
+			console.warn("rcon error", e.message);
+			return false;
+		}
+	}
 	update() {
 		dockerComposeBuild({
 			commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],

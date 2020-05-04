@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { useLocalStorage } from "@rehooks/local-storage";
@@ -55,10 +55,12 @@ export default function ServerCard({
 	const supportsUpdate = features.includes("update");
 	const supportsMods = features.includes("mods");
 	const supportsBackup = features.includes("backup");
+	const supportsRcon = features.includes("rcon");
 	const controlUrl = baseUrl + "control/";
 	const logsUrl = baseUrl + "logs/";
 	const updateUrl = baseUrl + "update/";
 	const modsUrl = baseUrl + "mods/";
+	const rconUrl = baseUrl + "rcon/";
 
 	const [isAdmin] = useLocalStorage("isAdmin");
 	const authedAxios = useAuthedAxios();
@@ -120,16 +122,19 @@ export default function ServerCard({
 		pollStatus();
 	});
 
-	useInterval(async () => {
-		if (document.hidden || !logOpen) {
-			return;
-		}
+	const fetchLogs = useCallback(async () => {
 		const {
 			data: { logs: newLogs },
 		} = await axios.get(logsUrl);
 		if (newLogs) {
 			setLogLines(newLogs);
 		}
+	}, [logsUrl]);
+	useInterval(async () => {
+		if (document.hidden || !logOpen) {
+			return;
+		}
+		await fetchLogs();
 	}, 2000);
 
 	const statusIcon =
@@ -281,6 +286,10 @@ export default function ServerCard({
 					open={logOpen}
 					setOpen={setLogOpen}
 					logLines={logLines}
+					rconUrl={
+						supportsRcon && isAdmin && status === "running" ? rconUrl : ""
+					}
+					fetchLogs={fetchLogs}
 				/>
 			)}
 			{supportsMods && (

@@ -229,6 +229,17 @@ app.get("/mods/search", async (request, response) => {
 	}
 });
 
+app.post("/rcon", async (request, response) => {
+	if (!gameManager.rcon) {
+		response.status(501).json({ error: "Not Implemented" });
+	}
+	if (await gameManager.rcon(request.body.rcon)) {
+		response.json({});
+	} else {
+		response.status(400).json({ error: "Failed running rcon" });
+	}
+});
+
 app.listen(listenPort);
 console.log(`Listening on port ${listenPort}`);
 
@@ -247,6 +258,7 @@ async function registerWithGateway() {
 				gameManager.getModSearch && "modSearch",
 				gameManager.update && "update",
 				gameManager.filesToBackup && "backup",
+				gameManager.rcon && "rcon",
 			].filter(Boolean),
 		});
 	} catch (err) {

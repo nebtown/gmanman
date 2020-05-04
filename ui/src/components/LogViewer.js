@@ -5,9 +5,20 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import { TextField } from "@material-ui/core";
+import { useAuthedAxios } from "../util/useAuthedAxios";
 
-export default function LogViewer({ title, open, setOpen, logLines }) {
+export default function LogViewer({
+	title,
+	open,
+	setOpen,
+	logLines,
+	rconUrl,
+	fetchLogs,
+}) {
 	const dialogContentRef = useRef();
+	const authedAxios = useAuthedAxios();
+	const [rconInput, setRconInput] = React.useState("");
 
 	const logLineCounts = {};
 
@@ -77,6 +88,27 @@ export default function LogViewer({ title, open, setOpen, logLines }) {
 				</DialogContentText>
 			</DialogContent>
 			<DialogActions>
+				{rconUrl && (
+					<form
+						onSubmit={async e => {
+							e.preventDefault();
+							setRconInput("");
+							await authedAxios.post(rconUrl, { rcon: rconInput });
+							await fetchLogs();
+						}}
+						style={{ width: "100%" }}
+					>
+						<TextField
+							id="rcon"
+							label="rcon"
+							value={rconInput}
+							onChange={event => setRconInput(event.target.value)}
+							margin="dense"
+							variant="outlined"
+							style={{ width: "100%" }}
+						/>
+					</form>
+				)}
 				<Button
 					onClick={() => {
 						setOpen(false);
