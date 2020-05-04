@@ -23,7 +23,7 @@
     "minimist": "^1.2.2",
     "modern-rcon": "^1.0.3",
     "node-7z": "^1.1.1",
-    "srcds-rcon": "^2.2.1",
+    "srcds-rcon": "Frahmer/node-srcds-rcon#6b3b257",
     "strip-ansi": "^5.2.0",
     "xml2js": "^0.4.22"
   },

@@ -2205,6 +2205,10 @@ sprintf-js@~1.0.2:
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
   integrity sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=
 
+srcds-rcon@Frahmer/node-srcds-rcon#6b3b257:
+  version "2.2.1"
+  resolved "https://codeload.github.com/Frahmer/node-srcds-rcon/tar.gz/6b3b2574d226f22509183c0d1d5fd303e7b94368"
+
 srcds-rcon@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/srcds-rcon/-/srcds-rcon-2.2.1.tgz#6fb01928420addda2b87d97e31a0d607e9ab8027"
