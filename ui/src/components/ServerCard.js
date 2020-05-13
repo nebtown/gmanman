@@ -280,7 +280,7 @@ export default function ServerCard({
 					</Button>
 				)}
 			</CardActions>
-			{supportsLogs && (
+			{supportsLogs && logOpen && (
 				<LogViewer
 					title={title}
 					open={logOpen}

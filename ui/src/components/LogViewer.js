@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -7,6 +7,7 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { TextField } from "@material-ui/core";
 import { useAuthedAxios } from "../util/useAuthedAxios";
+import { useLocalStorage } from "@rehooks/local-storage";
 
 export default function LogViewer({
 	title,
@@ -18,7 +19,11 @@ export default function LogViewer({
 }) {
 	const dialogContentRef = useRef();
 	const authedAxios = useAuthedAxios();
-	const [rconInput, setRconInput] = React.useState("");
+	const [rconInput, setRconInput] = useState("");
+
+	let [rconHistory, setRconHistory] = useLocalStorage(`rconHistory-${rconUrl}`);
+	rconHistory = rconHistory || [];
+	const [rconHistoryId, setRconHistoryId] = useState(0);
 
 	const logLineCounts = {};
 
@@ -93,6 +98,9 @@ export default function LogViewer({
 						onSubmit={async e => {
 							e.preventDefault();
 							setRconInput("");
+							if (rconHistory.length === 0 || rconHistory[0] !== rconInput) {
+								setRconHistory([rconInput, ...rconHistory]);
+							}
 							await authedAxios.post(rconUrl, { rcon: rconInput });
 							await fetchLogs();
 						}}
@@ -103,6 +111,22 @@ export default function LogViewer({
 							label="rcon"
 							value={rconInput}
 							onChange={event => setRconInput(event.target.value)}
+							autoComplete="off"
+							onKeyDown={event => {
+								if (event.key === "ArrowUp") {
+									setRconInput(rconHistory[rconHistoryId] || "");
+									setRconHistoryId(
+										Math.min(rconHistory.length - 1, rconHistoryId + 1)
+									);
+								} else if (event.key === "ArrowDown") {
+									setRconInput(
+										rconHistoryId > 0 ? rconHistory[rconHistoryId - 1] : ""
+									);
+									setRconHistoryId(Math.max(0, rconHistoryId - 1));
+								} else {
+									setRconHistoryId(0);
+								}
+							}}
 							margin="dense"
 							variant="outlined"
 							style={{ width: "100%" }}
