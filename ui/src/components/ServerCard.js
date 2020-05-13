@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { useLocalStorage } from "@rehooks/local-storage";
@@ -76,6 +76,8 @@ export default function ServerCard({
 	]), */
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [logOpen, setLogOpen] = useState(false);
+	const logOffset = useRef(-1000);
+	const logFetchRunning = useRef(false);
 	const [logLines, setLogLines] = useState("");
 	const [modsOpen, setModsOpen] = useState(false);
 	const [stopConfirmationOpen, setStopConfirmationOpen] = useState(false);
@@ -123,19 +125,28 @@ export default function ServerCard({
 	});
 
 	const fetchLogs = useCallback(async () => {
-		const {
-			data: { logs: newLogs },
-		} = await axios.get(logsUrl);
-		if (newLogs) {
-			setLogLines(newLogs);
-		}
-	}, [logsUrl]);
-	useInterval(async () => {
-		if (document.hidden || !logOpen) {
+		if (logFetchRunning.current) {
 			return;
 		}
-		await fetchLogs();
-	}, 2000);
+		logFetchRunning.current = true;
+		try {
+			const { data } = await axios.get(
+				`${logsUrl}?offset=${logOffset.current}`
+			);
+			if (data.offset) {
+				// eslint-disable-next-line require-atomic-updates
+				logOffset.current = data.offset;
+				if (data.logs) {
+					setLogLines(oldLogs => (oldLogs + "\n" + data.logs).trim());
+				}
+			} else if (data.logs !== undefined) {
+				setLogLines(data.logs);
+			}
+		} finally {
+			// eslint-disable-next-line require-atomic-updates
+			logFetchRunning.current = false;
+		}
+	}, [logsUrl]);
 
 	const statusIcon =
 		status === "stopped" ? (
@@ -231,10 +242,7 @@ export default function ServerCard({
 					<Button
 						size="small"
 						onClick={async () => {
-							const {
-								data: { logs: newLogs },
-							} = await axios.get(logsUrl);
-							setLogLines(newLogs);
+							await fetchLogs();
 							setLogOpen(true);
 						}}
 					>

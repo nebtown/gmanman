@@ -3,7 +3,7 @@ const {
 	dockerComposeStart,
 	dockerComposeStop,
 	dockerIsProcessRunning,
-	dockerLogs,
+	dockerLogRead,
 	rconConnect,
 } = require("./common-helpers");
 
@@ -38,8 +38,11 @@ module.exports = class MinecraftManager {
 		}
 		return Number(matches[1]);
 	}
-	async logs() {
-		const logs = await dockerLogs();
-		return logs.replace(/^(.*?)\[/gm, "["); // trim colour codes
+	async logs(requestedOffset) {
+		const { logs, offset } = await dockerLogRead(requestedOffset);
+		return {
+			logs: logs.replace(/^(.*?)\[/gm, "["), // trim colour codes
+			offset,
+		};
 	}
 };

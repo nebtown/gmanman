@@ -16,24 +16,24 @@ const { steamWorkshopGetModSearch } = require("./common-helpers");
 module.exports = class SpaceEngineersManager {
 	constructor({ setStatus }) {
 		this.setStatus = setStatus;
-		this.logData = "";
+		this.logData = [];
 		this.APPID = 244850;
 	}
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:29016"}`;
 	}
 	start() {
-		this.logData += "\n\n\nLaunching...\n";
+		this.logData.push("\n\n\nLaunching...\n");
 		this.process = spawnProcess(path.join(gameDir, "Torch.Server.exe"));
 		this.process.stdout.on("data", data => {
 			let text = data.toString().trim();
 			debugLog(text);
-			this.logData += text + "\n";
+			this.logData.push(text.split("\n"));
 		});
 		this.process.stderr.on("data", data => {
 			let text = data.toString().trim();
 			debugLog(text);
-			this.logData += text + "\n";
+			this.logData.push(text.split("\n"));
 		});
 		this.process.on("close", (code, signal) => {
 			this.setStatus("stopped");
@@ -58,8 +58,11 @@ module.exports = class SpaceEngineersManager {
 			return false;
 		}
 	}
-	async logs() {
-		return this.logData;
+	async logs(requestedOffset) {
+		return {
+			logs: this.logData.slice(requestedOffset).join("\n"),
+			offset: this.logData.length,
+		};
 	}
 	getModsFileName() {
 		return path.join(

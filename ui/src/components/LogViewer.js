@@ -8,6 +8,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { TextField } from "@material-ui/core";
 import { useAuthedAxios } from "../util/useAuthedAxios";
 import { useLocalStorage } from "@rehooks/local-storage";
+import { useInterval } from "../util/hooks";
 
 export default function LogViewer({
 	title,
@@ -42,6 +43,13 @@ export default function LogViewer({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [logLines]);
+
+	useInterval(async () => {
+		if (document.hidden || !open) {
+			return;
+		}
+		await fetchLogs();
+	}, 2000);
 
 	return (
 		<Dialog

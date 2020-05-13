@@ -19,8 +19,8 @@ Starts Game Server
 * `DELETE /control`
 Stops Game Server
     * often via `docker-compose down`
-* `GET /logs`
-    * `{"logs": "Starting...\nArk's up!"}`
+* `GET /logs?offset=400`
+    * `{"logs": "Starting...\nArk's up!", "offset": 401}`
     * often via `docker logs`
 * `POST /update`
 * `GET /mods`

@@ -169,12 +169,7 @@ app.delete("/control", (request, response) => {
 });
 app.get("/logs", async (request, response) => {
 	try {
-		response.json({
-			logs: (await gameManager.logs())
-				.split(/\n/g)
-				.slice(-100)
-				.join("\n"),
-		});
+		response.json(await gameManager.logs(parseInt(request.query.offset)));
 	} catch (e) {
 		console.log("/logs: ", e);
 		response.status(500).json({});

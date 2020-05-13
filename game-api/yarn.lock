@@ -2209,11 +2209,6 @@ srcds-rcon@Frahmer/node-srcds-rcon#6b3b257:
   version "2.2.1"
   resolved "https://codeload.github.com/Frahmer/node-srcds-rcon/tar.gz/6b3b2574d226f22509183c0d1d5fd303e7b94368"
 
-srcds-rcon@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/srcds-rcon/-/srcds-rcon-2.2.1.tgz#6fb01928420addda2b87d97e31a0d607e9ab8027"
-  integrity sha1-b7AZKEIK3dorh9l+MaDWB+mrgCc=
-
 ssh2-streams@~0.4.4:
   version "0.4.6"
   resolved "https://registry.yarnpkg.com/ssh2-streams/-/ssh2-streams-0.4.6.tgz#1ef0bca163141b4baedf047c8429e48be8c2d99d"

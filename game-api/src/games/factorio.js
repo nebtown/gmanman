@@ -10,7 +10,7 @@ const {
 	dockerComposeStart,
 	dockerComposeStop,
 	dockerIsProcessRunning,
-	dockerLogs,
+	dockerLogRead,
 	rconConnect,
 } = require("./common-helpers");
 
@@ -46,12 +46,15 @@ module.exports = class FactorioManager {
 		}
 		return Number(matches[1]);
 	}
-	async logs() {
-		const logs = await dockerLogs();
-		if (this.getCurrentStatus() === "updating") {
-			return logs;
-		}
-		return stripAnsi(logs.replace(/^(.{8})/gm, ""));
+	async logs(requestedOffset) {
+		const { logs, offset } = await dockerLogRead(requestedOffset);
+		return {
+			logs:
+				this.getCurrentStatus() === "updating"
+					? logs
+					: stripAnsi(logs.replace(/^(.{8})/gm, "")),
+			offset,
+		};
 	}
 	update() {
 		docker.pull("factoriotools/factorio");

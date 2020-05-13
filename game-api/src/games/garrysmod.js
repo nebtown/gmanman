@@ -7,7 +7,7 @@ const {
 	dockerComposeStop,
 	dockerComposeBuild,
 	dockerIsProcessRunning,
-	dockerLogs,
+	dockerLogRead,
 	rconSRCDSConnect,
 	steamWorkshopGetModSearch,
 } = require("./common-helpers");
@@ -43,12 +43,12 @@ module.exports = class GarrysmodManager {
 			return false;
 		}
 	}
-	async logs() {
-		const logs = await dockerLogs();
-		if (this.getCurrentStatus() === "updating") {
-			return logs;
-		}
-		return stripAnsi(logs);
+	async logs(requestedOffset) {
+		const { logs, offset } = await dockerLogRead(requestedOffset);
+		return {
+			logs: stripAnsi(logs),
+			offset,
+		};
 	}
 
 	async rcon(command) {

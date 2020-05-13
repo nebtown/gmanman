@@ -7,13 +7,13 @@ module.exports = class TestManager {
 	constructor({ getCurrentStatus, setStatus }) {
 		this.getCurrentStatus = getCurrentStatus;
 		this.setStatus = setStatus;
-		this.logData = "";
+		this.logData = [];
 	}
 	start() {
-		this.logData += "\n\n\nLaunching...\n";
+		this.logData.push("\n", "\n", "\n", "Launching...");
 	}
 	stop() {
-		this.logData += "Stopping...\n";
+		this.logData.push("Stopping...");
 	}
 	async isProcessRunning() {
 		return (
@@ -30,8 +30,11 @@ module.exports = class TestManager {
 		}
 		return false;
 	}
-	async logs() {
-		return this.logData;
+	async logs(requestedOffset) {
+		return {
+			logs: this.logData.slice(requestedOffset).join("\n"),
+			offset: this.logData.length,
+		};
 	}
 	update() {
 		setTimeout(() => {

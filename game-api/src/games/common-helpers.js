@@ -1,5 +1,6 @@
 const fsPromises = require("../libjunkdrawer/fsPromises");
 const path = require("path");
+const stream = require("stream");
 const dotenv = require("dotenv");
 const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
@@ -43,6 +44,54 @@ async function dockerLogs() {
 		console.warn("logs:", err.message);
 		return "";
 	}
+}
+
+let logCache = [];
+async function dockerLogRead(offset = -100) {
+	const container = docker.getContainer(gameId);
+	await dockerLogStreamStart(container);
+	if ((!offset && offset !== 0) || offset < 0) {
+		offset = Math.max(0, logCache.length + (offset || -100));
+	}
+	return {
+		logs: logCache.slice(offset).join("\n"),
+		offset: logCache.length,
+	};
+}
+async function dockerLogStreamStart(container) {
+	if (this.logStream) {
+		return;
+	}
+
+	const logStream = await container.logs({
+		follow: true,
+		stdout: true,
+		stderr: true,
+		tail: 1000,
+	});
+	this.logStream = logStream;
+
+	logStream.on("data", chunk => {
+		console.log("D", chunk.toString("utf8").trimEnd());
+		logCache.push(
+			...chunk
+				.toString("utf8")
+				.trimEnd()
+				.split("\n")
+		);
+		if (logCache.length > 15000) {
+			logCache.splice(0, logCache.length - 10000);
+		}
+	});
+	logStream.on("end", () => {
+		delete this.logStream;
+		logCache.push("[end-of-logs]");
+	});
+
+	// delay so we can get some logs
+	return await new Promise(resolve =>
+		setTimeout(() => resolve(logStream), 500)
+	);
 }
 
 async function rconConnect(port) {
@@ -167,6 +216,7 @@ module.exports = {
 	dockerComposeBuild,
 	dockerIsProcessRunning,
 	dockerLogs,
+	dockerLogRead,
 	rconConnect,
 	rconSRCDSConnect,
 	readEnvFileCsv,
