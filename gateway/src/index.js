@@ -4,6 +4,7 @@ const http = require("http");
 const cors = require("cors");
 const axios = require("axios");
 const querystring = require("querystring");
+const otplib = require("otplib");
 
 const app = express();
 const { debugLog, listenPort } = require("./cliArgs");
@@ -100,14 +101,22 @@ app.all("/:gameId/*", async (request, response) => {
 	if (!gameApi) {
 		return response.status(404).json({ error: "GameIdNotFound" });
 	}
-	const queryString = Object.keys(request.query).length
-		? "?" + querystring.stringify(request.query)
+	const query = request.query;
+	let totp;
+	if (gameApi.totpSecret) {
+		totp = otplib.totp.generate(gameApi.totpSecret);
+		if (request.method === "GET") {
+			query.totp = totp;
+		}
+	}
+	const queryString = Object.keys(query).length
+		? "?" + querystring.stringify(query)
 		: "";
 	try {
 		const { data } = await axios({
 			method: request.method,
 			url: `${gameApi.url}${endpoint}${queryString}`,
-			data: request.body,
+			data: { ...request.body, totp },
 			timeout: 5000,
 		});
 		response.json(data);
