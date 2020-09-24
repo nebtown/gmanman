@@ -12,11 +12,11 @@ const {
 	steamWorkshopGetModSearch,
 } = require("./common-helpers");
 
-module.exports = class GarrysmodManager {
+module.exports = class TF2Manager {
 	constructor({ getCurrentStatus, setStatus }) {
 		this.getCurrentStatus = getCurrentStatus;
 		this.setStatus = setStatus;
-		this.APPID = 4000;
+		this.APPID = 440;
 	}
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
@@ -33,13 +33,13 @@ module.exports = class GarrysmodManager {
 	async getPlayerCount() {
 		try {
 			const response = await Gamedig.query({
-				type: "garrysmod",
+				type: "tf2",
 				host: `localhost`,
 				socketTimeout: 750,
 			});
 			return response.players.length;
 		} catch (err) {
-			debugLog(`Gmod getPlayerCount err: ${err}`);
+			debugLog(`TF2 getPlayerCount err: ${err}`);
 			return false;
 		}
 	}
@@ -70,24 +70,14 @@ module.exports = class GarrysmodManager {
 			commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],
 		})
 			.then(res => {
-				console.log("finished gmod update: ", res);
+				console.log("finished tf2 update: ", res);
 				this.setStatus("stopped");
 			})
 			.catch(e => {
 				console.error("update error: ", e);
 			});
 	}
-	async getModsTodo() {}
-	async setModsTodo(modsList) {
-		try {
-			// todo
-		} catch (e) {
-			console.error("setMods error: ", e);
-			return false;
-		}
-	}
 	async getModSearch(query) {
 		return steamWorkshopGetModSearch(this.APPID, query);
 	}
-	async filesToBackupTodo() {}
 };
