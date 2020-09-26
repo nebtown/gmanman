@@ -1,0 +1,10 @@
+version: '3.4'
+services:
+  among-us:
+    image: aeonlucid/impostor
+    container_name: among-us
+    tty: true
+    stdin_open: true
+    restart: on-failure
+    ports:
+      - "22023:22023/udp" # game
