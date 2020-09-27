@@ -68,7 +68,13 @@ yarn-error.log
 # Yarn Integrity file
 .yarn-integrity
 
+# Unused NPM Lockfile - NOTE: Use yarn instead.
+package-lock.json
+
+#IDE Stuff
 .idea
+.vscode
+
 *.7z
 
 
