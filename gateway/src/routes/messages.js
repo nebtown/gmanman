@@ -7,6 +7,13 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 
 const { debugLog, discordToken, discordChannel } = require("../cliArgs");
+const { findMember } = require("./discordUtil");
+const {
+	reBedtime,
+	reBedtimeClear,
+	handleCommandBedtime,
+	handleCommandBedtimeClear,
+} = require("./bedtime");
 
 /** @type TextChannel */
 let mainChannel;
@@ -41,6 +48,37 @@ client.on("message", msg => {
 	if (msgContainsGman) {
 		if (msg.content.match(/\bbridgeport\b/i)) {
 			msg.reply("Bridgeport is alive and well :wink:");
+		}
+		const kickMatch = msg.content.match(/\bget rid of (\w+)\b/i);
+		if (kickMatch) {
+			const speakerVoiceChannel = msg.member.voice.channel;
+			if (speakerVoiceChannel) {
+				const target = findMember(speakerVoiceChannel.members, kickMatch[1]);
+				if (target) {
+					target.voice.kick("");
+				}
+			}
+		}
+		const joinChannelMatch = msg.content.match(/\bput (\w+) in (\w+)\b/i);
+		if (joinChannelMatch) {
+			const nickSearch = joinChannelMatch[1].toLowerCase();
+			msg.guild.members
+				.fetch({ query: nickSearch })
+				.then(guildMembers => {
+					const target = findMember(guildMembers, nickSearch);
+					if (target) {
+						target.voice.setChannel(joinChannelMatch[2]);
+					}
+				})
+				.catch(console.error);
+		}
+		const bedtimeMatch = msg.content.match(reBedtime);
+		if (bedtimeMatch) {
+			handleCommandBedtime(msg, bedtimeMatch);
+		}
+		const bedtimeClearMatch = msg.content.match(reBedtimeClear);
+		if (bedtimeClearMatch) {
+			handleCommandBedtimeClear(msg, bedtimeClearMatch);
 		}
 		if (msg.content.match(/\bwho\b.*\bam\b.*\bi\b/i)) {
 			// Send the user's avatar URL
