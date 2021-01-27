@@ -25,8 +25,14 @@ services:
       - ./volume:/ark
       - ./Saved:/ark/server/ShooterGame/Saved
     ports:
+      - 7776:7776 # wat
+      - 7776:7776/udp # wat
+      - 7777:7777
+      - 7777:7777/udp
       - 7778:7778/udp
       - 7778:7778
+      - 7779:7779/udp
+      - 7779:7779
       - 27015:27015/udp
       - 27015:27015
       - 32330:32330

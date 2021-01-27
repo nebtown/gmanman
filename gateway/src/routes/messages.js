@@ -10,6 +10,7 @@ const { debugLog, discordToken, discordChannel } = require("../cliArgs");
 
 /** @type TextChannel */
 let mainChannel;
+let channels = {};
 
 client.on("ready", async () => {
 	console.log(`Discord logged in as ${client.user.tag}!`);
@@ -19,6 +20,17 @@ client.on("ready", async () => {
 		console.error("Discord channel init error: ", err);
 	}
 });
+
+async function getChannel(id) {
+	if (!channels[id]) {
+		try {
+			channels[id] = await client.channels.fetch(id);
+		} catch (err) {
+			console.error("Discord channel init error: ", err);
+		}
+	}
+	return channels[id];
+}
 
 client.on("message", msg => {
 	msg = /** @type Message */ msg;
@@ -69,7 +81,7 @@ client
 	.catch(err => console.error("Discord: failed to login ", err));
 
 router.post("/", async function(req, response) {
-	sendMessage(req.body.nick, req.body.message).catch(err =>
+	sendMessage(req.body.nick, req.body.message, req.body.channel).catch(err =>
 		console.log(
 			`Discord: failed to send message ${req.body.nick}: ${req.body.message} because: ${err}`
 		)
@@ -83,10 +95,11 @@ router.get("/send", async function(req, response) {
 });
 
 let lastNickname = "";
-async function sendMessage(nickname, message) {
+async function sendMessage(nickname, message, channelId) {
+	const channel = channelId ? await getChannel(channelId) : mainChannel;
 	debugLog(`Discord sending ${nickname}: ${message}`);
-	if (!mainChannel) {
-		return console.warn("Discord: Not connected to channel");
+	if (!channel) {
+		return console.warn("Discord: Not connected to channel", channelId);
 	}
 	let discordNickname = "Gman";
 	if (nickname && nickname !== "Gman") {
@@ -95,13 +108,13 @@ async function sendMessage(nickname, message) {
 	try {
 		if (discordNickname !== lastNickname) {
 			lastNickname = discordNickname;
-			await mainChannel.guild.me.setNickname(discordNickname);
+			await channel.guild.me.setNickname(discordNickname);
 		}
 		if (message.match(/]\(https?:\/\//)) {
 			const embed = new Discord.MessageEmbed().setDescription(message);
-			await mainChannel.send(embed);
+			await channel.send(embed);
 		} else {
-			await mainChannel.send(message);
+			await channel.send(message);
 		}
 	} catch (err) {
 		console.error(`Discord sendMessage error: ${err}`);

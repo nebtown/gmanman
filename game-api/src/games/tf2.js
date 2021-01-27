@@ -35,6 +35,7 @@ module.exports = class TF2Manager {
 			const response = await Gamedig.query({
 				type: "tf2",
 				host: `localhost`,
+				port: rconPort,
 				socketTimeout: 750,
 			});
 			return response.players.length;
