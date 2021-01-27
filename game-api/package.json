@@ -20,7 +20,7 @@
     "express-prettify": "^0.1.1",
     "express-timeout-handler": "^2.2.0",
     "gamedig": "^2.0.16",
-    "minimist": "^1.2.2",
+    "minimist": "^1.2.3",
     "modern-rcon": "^1.0.3",
     "node-7z": "^1.1.1",
     "otplib": "^12.0.1",
