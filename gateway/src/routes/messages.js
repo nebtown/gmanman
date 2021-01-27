@@ -3,6 +3,7 @@ const router = express.Router();
 const WebSocket = require("ws");
 const fs = require("fs");
 
+const ytdl = require("ytdl-core");
 const Discord = require("discord.js");
 const client = new Discord.Client();
 
@@ -39,7 +40,7 @@ async function getChannel(id) {
 	return channels[id];
 }
 
-client.on("message", msg => {
+client.on("message", async msg => {
 	msg = /** @type Message */ msg;
 	if (msg.author.id === client.user.id) {
 		return;
@@ -79,6 +80,23 @@ client.on("message", msg => {
 		const bedtimeClearMatch = msg.content.match(reBedtimeClear);
 		if (bedtimeClearMatch) {
 			handleCommandBedtimeClear(msg, bedtimeClearMatch);
+		}
+		const playMatch = msg.content.match(/\bplay \b(http.*youtu.*)\b/i);
+		if (playMatch) {
+			const url = playMatch[1];
+			if (msg.member.voice.channel) {
+				const connection = await msg.member.voice.channel.join();
+				const stream = connection.play(ytdl(url, { filter: "audioonly" }), {
+					volume: 0.5,
+				});
+				stream.on("finish", () => {
+					connection.disconnect();
+				});
+			} else {
+				msg.reply(
+					"If I play a Youtube in a forest and no one is around to hear it, is it still a meme?"
+				);
+			}
 		}
 		if (msg.content.match(/\bwho\b.*\bam\b.*\bi\b/i)) {
 			// Send the user's avatar URL

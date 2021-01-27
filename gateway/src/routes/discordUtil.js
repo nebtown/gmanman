@@ -10,6 +10,11 @@ function findMember(members, nick) {
 	return member;
 }
 
+function arrayRandom(arr) {
+	return arr[Math.floor(Math.random() * arr.length)];
+}
+
 module.exports = {
 	findMember,
+	arrayRandom,
 };
