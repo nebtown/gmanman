@@ -1,6 +1,7 @@
 const momentTz = require("moment-timezone");
+const ytdl = require("ytdl-core");
 
-const { findMember } = require("./discordUtil");
+const { findMember, arrayRandom } = require("./discordUtil");
 
 let bedtimes = {};
 const bedtimeReplies = [
@@ -9,6 +10,11 @@ const bedtimeReplies = [
 	"Its sleepy time for nick!",
 	"Oh noes, its that time again for nick!",
 	"From all of us at http://wwn.nebcorp.com - we wish nick good night.",
+];
+const bedtimeSounds = [
+	"https://www.youtube.com/watch?v=eISzv8Ry45U",
+	"https://www.youtube.com/watch?v=uxkVSLv1dRQ",
+	"https://www.youtube.com/watch?v=n0XaSvhTYd4",
 ];
 const reBedtime = /\bset.+\b(\w{2,})(?:'s?)?\b.+bed.+to ([\d: \-AMPamp]+)\b/i;
 const reBedtimeClear = /\b(?:clear|cancel|remove).+\b(\w{2,})(?:'s?)?\b.+bed/i;
@@ -48,19 +54,26 @@ function parseTime(timeString) {
 
 	return d;
 }
-function processBedtime(memberId) {
+function processBedtime(memberId, playSound = false) {
 	if (!bedtimes[memberId]) {
 		return;
 	}
 	const member = bedtimes[memberId].member;
-	member.fetch().then(member => {
+	member.fetch().then(async member => {
 		console.log("inside fetch", member, member.voice.channel);
 		if (member && member.voice.channel) {
-			member.voice.kick("Bedtime!");
+			const connection = await member.voice.channel.join();
+			const stream = connection.play(
+				ytdl(arrayRandom(bedtimeSounds), { filter: "audioonly" }),
+				{ volume: 0.5 }
+			);
+			stream.on("finish", () => {
+				member.voice.kick("Bedtime!");
+				connection.disconnect();
+			});
+
 			bedtimes[memberId].reply(
-				bedtimeReplies[
-					Math.floor(Math.random() * bedtimeReplies.length)
-				].replace("nick", bedtimes[memberId].name)
+				arrayRandom(bedtimeReplies).replace("nick", bedtimes[memberId].name)
 			);
 		}
 		if (Date.now() > bedtimes[memberId].time + 60000 * 60) {
@@ -100,9 +113,9 @@ function handleCommandBedtime(msg, bedtimeMatch) {
 						name: target.displayName,
 						time: targetTime,
 						timer: setTimeout(() => {
-							processBedtime(targetId);
+							processBedtime(targetId, true);
 							bedtimes[targetId].interval = setInterval(
-								() => processBedtime(targetId),
+								() => processBedtime(targetId, Math.random() < 0.333),
 								(1 + Math.random() * 4) * 60000
 							);
 						}, delay),
