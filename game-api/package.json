@@ -10,10 +10,10 @@
   "dependencies": {
     "7zip-bin": "^5.0.3",
     "@google-cloud/storage": "^4.0.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "cors": "^2.8.5",
     "date-fns": "^2.8.1",
-    "docker-compose": "^0.22.2",
+    "docker-compose": "^0.23.6",
     "dockerode": "^3.0.1",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
@@ -22,11 +22,11 @@
     "gamedig": "^2.0.16",
     "minimist": "^1.2.2",
     "modern-rcon": "^1.0.3",
-    "node-7z": "^1.1.1",
+    "node-7z": "^2.1.2",
     "otplib": "^12.0.1",
     "srcds-rcon": "Frahmer/node-srcds-rcon#6b3b257",
-    "strip-ansi": "^5.2.0",
-    "xml2js": "^0.4.22"
+    "strip-ansi": "^6.0.0",
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {
     "eslint": "^6.6.0",
