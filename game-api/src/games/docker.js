@@ -6,6 +6,7 @@ const {
 	dockerComposeStart,
 	dockerComposeStop,
 	dockerComposeBuild,
+	dockerComposePull,
 	dockerIsProcessRunning,
 	dockerLogRead,
 	rconSRCDSConnect,
@@ -63,16 +64,24 @@ module.exports = class GenericDockerManager {
 			return false;
 		}
 	}
-	update() {
-		dockerComposeBuild({
-			commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],
-		})
+	async update() {
+		dockerComposePull()
 			.then(res => {
-				console.log("finished update: ", res);
+				console.log("finished docker pull: ", res);
 				this.setStatus("stopped");
 			})
 			.catch(e => {
-				console.error("update error: ", e);
+				console.log("docker pull failed:", e, ", attempting build:");
+				dockerComposeBuild({
+					commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],
+				})
+					.then(res => {
+						console.log("finished update: ", res);
+						this.setStatus("stopped");
+					})
+					.catch(e => {
+						console.error("update error: ", e);
+					});
 			});
 	}
 };

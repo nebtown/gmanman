@@ -23,6 +23,12 @@ function dockerComposeStart() {
 function dockerComposeStop() {
 	compose.down({ dir: gameDir });
 }
+function dockerComposePull(params) {
+	return compose.pullAll({
+		dir: gameDir,
+		...params,
+	});
+}
 function dockerComposeBuild(params) {
 	return compose.buildOne(game, {
 		dir: gameDir,
@@ -214,6 +220,7 @@ module.exports = {
 	dockerComposeStart,
 	dockerComposeStop,
 	dockerComposeBuild,
+	dockerComposePull,
 	dockerIsProcessRunning,
 	dockerLogs,
 	dockerLogRead,
