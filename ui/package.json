@@ -21,7 +21,7 @@
     "@material-ui/styles": "^4.4.3",
     "@rehooks/local-storage": "^1.7.0",
     "awesome-debounce-promise": "^2.1.0",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "gatsby": "^2.15.28",
     "gatsby-image": "^2.2.23",
