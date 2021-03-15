@@ -1,5 +1,4 @@
 const stripAnsi = require("strip-ansi");
-const Gamedig = require("gamedig");
 
 const { gameId, debugLog, connectUrl, rconPort } = require("../cliArgs");
 const {
@@ -9,6 +8,7 @@ const {
 	dockerComposePull,
 	dockerIsProcessRunning,
 	dockerLogRead,
+	gamedigQueryPlayers,
 	rconSRCDSConnect,
 } = require("./common-helpers");
 
@@ -29,18 +29,8 @@ module.exports = class GenericDockerManager {
 	isProcessRunning() {
 		return dockerIsProcessRunning();
 	}
-	async getPlayerCount() {
-		try {
-			const response = await Gamedig.query({
-				type: gameId,
-				host: `localhost`,
-				socketTimeout: 750,
-			});
-			return response.players.length;
-		} catch (err) {
-			debugLog(`getPlayerCount err: ${err}`);
-			return false;
-		}
+	async getPlayers() {
+		return await gamedigQueryPlayers();
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

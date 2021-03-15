@@ -31,7 +31,7 @@ module.exports = class FactorioManager {
 	isProcessRunning() {
 		return dockerIsProcessRunning();
 	}
-	async getPlayerCount() {
+	async getPlayers() {
 		let playerList;
 		try {
 			playerList = await (await rconConnect(34198)).send("/players online");
@@ -44,7 +44,7 @@ module.exports = class FactorioManager {
 			console.warn("unexpected playerList:", playerList);
 			return false;
 		}
-		return Number(matches[1]);
+		return [...new Array(Number(matches[1]))].map(_ => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

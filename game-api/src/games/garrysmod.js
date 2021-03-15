@@ -1,69 +1,13 @@
-const stripAnsi = require("strip-ansi");
-const Gamedig = require("gamedig");
-
-const { gameId, debugLog, connectUrl, rconPort } = require("../cliArgs");
 const {
-	dockerComposeStart,
-	dockerComposeStop,
 	dockerComposeBuild,
-	dockerIsProcessRunning,
-	dockerLogRead,
-	rconSRCDSConnect,
 	steamWorkshopGetModSearch,
 } = require("./common-helpers");
+const GenericDockerManager = require("./docker");
 
-module.exports = class GarrysmodManager {
+module.exports = class GarrysmodManager extends GenericDockerManager {
 	constructor({ getCurrentStatus, setStatus }) {
-		this.getCurrentStatus = getCurrentStatus;
-		this.setStatus = setStatus;
+		super({ getCurrentStatus, setStatus });
 		this.APPID = 4000;
-	}
-	getConnectUrl() {
-		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
-	}
-	start() {
-		return dockerComposeStart();
-	}
-	stop() {
-		return dockerComposeStop();
-	}
-	isProcessRunning() {
-		return dockerIsProcessRunning();
-	}
-	async getPlayerCount() {
-		try {
-			const response = await Gamedig.query({
-				type: "garrysmod",
-				host: `localhost`,
-				socketTimeout: 750,
-			});
-			return response.players.length;
-		} catch (err) {
-			debugLog(`Gmod getPlayerCount err: ${err}`);
-			return false;
-		}
-	}
-	async logs(requestedOffset) {
-		const { logs, offset } = await dockerLogRead(requestedOffset);
-		return {
-			logs: stripAnsi(logs),
-			offset,
-		};
-	}
-
-	async rcon(command) {
-		debugLog(`Running rcon: ${command}`);
-		try {
-			const response = await (await rconSRCDSConnect(rconPort)).command(
-				command,
-				500
-			);
-			debugLog(`Rcon response: ${response}`);
-			return true;
-		} catch (e) {
-			console.warn("rcon error", e.message);
-			return false;
-		}
 	}
 	update() {
 		dockerComposeBuild({

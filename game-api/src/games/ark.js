@@ -29,7 +29,7 @@ module.exports = class ArkManager {
 	isProcessRunning() {
 		return dockerIsProcessRunning();
 	}
-	async getPlayerCount() {
+	async getPlayers() {
 		// in theory the game has rcon 32330, but it wasn't seeming to work...
 
 		let response;
@@ -59,7 +59,7 @@ module.exports = class ArkManager {
 			console.warn("playerList: ", response);
 			return false;
 		}
-		return Number(matches[1]);
+		return [...new Array(Number(matches[1]))].map(_ => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

@@ -21,7 +21,7 @@ module.exports = class MinecraftManager {
 	isProcessRunning() {
 		return dockerIsProcessRunning();
 	}
-	async getPlayerCount() {
+	async getPlayers() {
 		let playerList;
 		try {
 			playerList = await (await rconConnect(27075)).send("list");
@@ -36,7 +36,7 @@ module.exports = class MinecraftManager {
 			console.warn("playerList: ", playerList);
 			return false;
 		}
-		return Number(matches[1]);
+		return [...new Array(Number(matches[1]))].map(_ => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

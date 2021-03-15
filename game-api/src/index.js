@@ -131,10 +131,11 @@ app.post("/restore", successTimeoutHandler, async (request, response) => {
 
 app.get("/control", async (request, response) => {
 	if (["unknown", "starting", "running", "stopped"].includes(currentStatus)) {
-		let playerCount =
+		let players =
 			(await gameManager.isProcessRunning()) &&
-			(await gameManager.getPlayerCount());
-		if (playerCount !== false) {
+			(await gameManager.getPlayers());
+		if (players !== false) {
+			const playerCount = players.length;
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
 			);
@@ -146,7 +147,7 @@ app.get("/control", async (request, response) => {
 					: "";
 				sendSystemChat(`${gameName} is up${connectText}!`);
 			}
-			return response.json({ status: currentStatus, playerCount });
+			return response.json({ status: currentStatus, playerCount, players });
 		}
 	}
 	if ("unknown" === currentStatus) {

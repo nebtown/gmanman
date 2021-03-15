@@ -11,7 +11,10 @@ const {
 	steamApiKey,
 	saveName,
 } = require("../cliArgs");
-const { steamWorkshopGetModSearch } = require("./common-helpers");
+const {
+	gamedigQueryPlayers,
+	steamWorkshopGetModSearch,
+} = require("./common-helpers");
 
 module.exports = class SpaceEngineersManager {
 	constructor({ setStatus }) {
@@ -45,18 +48,8 @@ module.exports = class SpaceEngineersManager {
 	async isProcessRunning() {
 		return !!this.process && !this.process.killed;
 	}
-	async getPlayerCount() {
-		try {
-			const state = await gamedig.query({
-				type: "spaceengineers",
-				host: "localhost",
-				port: 29016,
-			});
-			return state.players.length;
-		} catch (e) {
-			debugLog("gamedig", e.message);
-			return false;
-		}
+	async getPlayers() {
+		return await gamedigQueryPlayers();
 	}
 	async logs(requestedOffset) {
 		return {

@@ -6,6 +6,7 @@ const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
 const srcdsRcon = require("srcds-rcon");
 const axios = require("axios");
+const Gamedig = require("gamedig");
 const docker = new (require("dockerode"))();
 
 const {
@@ -13,6 +14,7 @@ const {
 	gameId,
 	gameDir,
 	debugLog,
+	rconPort,
 	argv,
 	steamApiKey,
 } = require("../cliArgs");
@@ -98,6 +100,22 @@ async function dockerLogStreamStart(container) {
 	return await new Promise(resolve =>
 		setTimeout(() => resolve(logStream), 500)
 	);
+}
+
+async function gamedigQueryPlayers(options = {}) {
+	try {
+		const response = await Gamedig.query({
+			type: gameId,
+			host: `localhost`,
+			socketTimeout: 750,
+			...(rconPort ? { rconPort } : {}),
+			...options,
+		});
+		return response.players;
+	} catch (err) {
+		debugLog(`gamedigQueryPlayers err: ${err}`);
+		return false;
+	}
 }
 
 async function rconConnect(port) {
@@ -224,6 +242,7 @@ module.exports = {
 	dockerIsProcessRunning,
 	dockerLogs,
 	dockerLogRead,
+	gamedigQueryPlayers,
 	rconConnect,
 	rconSRCDSConnect,
 	readEnvFileCsv,

@@ -21,12 +21,12 @@ module.exports = class TestManager {
 			this.getCurrentStatus() === "running"
 		);
 	}
-	async getPlayerCount() {
+	async getPlayers() {
 		if (this.getCurrentStatus() === "starting") {
 			this.setStatus("running");
 		}
 		if (this.getCurrentStatus() === "running") {
-			return 0;
+			return [];
 		}
 		return false;
 	}
