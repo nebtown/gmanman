@@ -48,6 +48,7 @@ const {
 	router: messagesRouter,
 	sendMessage,
 	initWebsocketListener,
+	initPlayerStatusPoller,
 } = require("./routes/messages");
 app.use("/messages", messagesRouter);
 
@@ -265,4 +266,5 @@ app.all("/:gameId/*", async (request, response) => {
 const httpServer = http.createServer(app);
 httpServer.listen(listenPort);
 initWebsocketListener(httpServer);
+initPlayerStatusPoller(knownGameApis);
 console.log(`Gateway listening on port ${listenPort}`);

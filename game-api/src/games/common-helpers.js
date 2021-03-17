@@ -108,7 +108,7 @@ async function gamedigQueryPlayers(options = {}) {
 			type: gameId,
 			host: `localhost`,
 			socketTimeout: 750,
-			...(rconPort ? { rconPort } : {}),
+			...(rconPort ? { port: rconPort } : {}),
 			...options,
 		});
 		return response.players;

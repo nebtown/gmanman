@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const WebSocket = require("ws");
 const fs = require("fs");
+const axios = require("axios");
 
 const ytdl = require("ytdl-core");
 const Discord = require("discord.js");
@@ -40,7 +41,7 @@ async function getChannel(id) {
 	return channels[id];
 }
 
-client.on("message", async msg => {
+client.on("message", async (msg) => {
 	msg = /** @type Message */ msg;
 	if (msg.author.id === client.user.id) {
 		return;
@@ -65,7 +66,7 @@ client.on("message", async msg => {
 			const nickSearch = joinChannelMatch[1].toLowerCase();
 			msg.guild.members
 				.fetch({ query: nickSearch })
-				.then(guildMembers => {
+				.then((guildMembers) => {
 					const target = findMember(guildMembers, nickSearch);
 					if (target) {
 						target.voice.setChannel(joinChannelMatch[2]);
@@ -109,7 +110,7 @@ client.on("message", async msg => {
 			fs.writeFile(
 				"/servers/gmod-docker-overrides/garrysmod/data/nextmap.txt",
 				nextMapMatch[1],
-				err => console.error("Failed to write nextmap.txt: ", err)
+				(err) => console.error("Failed to write nextmap.txt: ", err)
 			);
 			msg.reply(`Next map queued: ${nextMapMatch[1]}`);
 		}
@@ -118,7 +119,7 @@ client.on("message", async msg => {
 		debugLog(
 			`WS: Heard ${msg.author.username}: ${msg.content} (${wsConnections.length} clients)`
 		);
-		wsConnections.forEach(wsConnection => {
+		wsConnections.forEach((wsConnection) => {
 			wsConnection.send(
 				JSON.stringify({
 					type: "message",
@@ -134,10 +135,10 @@ client.on("message", async msg => {
 
 client
 	.login(discordToken)
-	.catch(err => console.error("Discord: failed to login ", err));
+	.catch((err) => console.error("Discord: failed to login ", err));
 
-router.post("/", async function(req, response) {
-	sendMessage(req.body.nick, req.body.message, req.body.channel).catch(err =>
+router.post("/", async function (req, response) {
+	sendMessage(req.body.nick, req.body.message, req.body.channel).catch((err) =>
 		console.log(
 			`Discord: failed to send message ${req.body.nick}: ${req.body.message} because: ${err}`
 		)
@@ -145,7 +146,7 @@ router.post("/", async function(req, response) {
 	response.json({ status: "ok" });
 });
 
-router.get("/send", async function(req, response) {
+router.get("/send", async function (req, response) {
 	await sendMessage(req.query.nick, req.query.message);
 	response.json({ status: "ok" });
 });
@@ -155,7 +156,8 @@ async function sendMessage(nickname, message, channelId) {
 	const channel = channelId ? await getChannel(channelId) : mainChannel;
 	debugLog(`Discord sending ${nickname}: ${message}`);
 	if (!channel) {
-		return console.warn("Discord: Not connected to channel", channelId);
+		console.warn("Discord: Not connected to channel", channelId);
+		return;
 	}
 	let discordNickname = "Gman";
 	if (nickname && nickname !== "Gman") {
@@ -166,11 +168,11 @@ async function sendMessage(nickname, message, channelId) {
 			lastNickname = discordNickname;
 			await channel.guild.me.setNickname(discordNickname);
 		}
-		if (message.match(/]\(https?:\/\//)) {
+		if (message.match && message.match(/]\(https?:\/\//)) {
 			const embed = new Discord.MessageEmbed().setDescription(message);
-			await channel.send(embed);
+			return await channel.send(embed);
 		} else {
-			await channel.send(message);
+			return await channel.send(message);
 		}
 	} catch (err) {
 		console.error(`Discord sendMessage error: ${err}`);
@@ -180,8 +182,8 @@ async function sendMessage(nickname, message, channelId) {
 const wsServer = new WebSocket.Server({ noServer: true });
 const wsConnections = [];
 
-wsServer.on("connection", ws => {
-	ws.on("message", message => {
+wsServer.on("connection", (ws) => {
+	ws.on("message", (message) => {
 		console.debug(`WS Received: ${message}`);
 		const request = JSON.parse(message);
 		if (request.type === "message") {
@@ -206,10 +208,72 @@ wsServer.on("connection", ws => {
 
 function initWebsocketListener(httpServer) {
 	httpServer.on("upgrade", (req, socket, head) => {
-		wsServer.handleUpgrade(req, socket, head, ws => {
+		wsServer.handleUpgrade(req, socket, head, (ws) => {
 			wsServer.emit("connection", ws, req);
 		});
 	});
 }
 
-module.exports = { router, sendMessage, initWebsocketListener };
+const gameMessageMeta = {};
+function initPlayerStatusPoller(knownGameApis) {
+	async function pollGameHealth({ id, name, url }) {
+		if (id === "valheim-zach") {
+			return;
+		}
+		if (!gameMessageMeta[id]) {
+			gameMessageMeta[id] = {};
+		}
+		const { data } = await axios({
+			method: "GET",
+			url: `${url}/control`,
+			timeout: 8000,
+		});
+		if (data.status === "running") {
+			console.log("found running", data);
+			const players = data.players || [];
+			const embed = new Discord.MessageEmbed()
+				.setTitle(`${name} is running`)
+				.setDescription(data.connectUrl || "");
+			if (data.playerCount > 0) {
+				embed.addField(
+					`Players: ${data.playerCount}`,
+					players
+						.map(({ name }) => name)
+						.filter(Boolean)
+						.join(", ") || "-",
+					true
+				);
+			}
+			try {
+				if (!gameMessageMeta[id].message) {
+					gameMessageMeta[id].message = await sendMessage("", embed);
+				} else {
+					gameMessageMeta[id].message = await gameMessageMeta[id].message.edit(
+						embed
+					);
+				}
+			} catch (err) {
+				console.error("Failed to edit message: ", err);
+			}
+		} else if (["stopping", "stopped"].includes(data.status)) {
+			if (gameMessageMeta[id].message) {
+				const embed = new Discord.MessageEmbed().setTitle(
+					`${name} was running`
+				);
+				await gameMessageMeta[id].message.edit(embed);
+				delete gameMessageMeta[id].message;
+			}
+		}
+		gameMessageMeta[id].lastStatus = data.status;
+	}
+	setInterval(() => {
+		Object.values(knownGameApis).map(pollGameHealth);
+	}, 10000);
+}
+
+module.exports = {
+	router,
+	sendMessage,
+	initWebsocketListener,
+	initPlayerStatusPoller,
+};

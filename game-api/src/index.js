@@ -141,13 +141,13 @@ app.get("/control", async (request, response) => {
 			);
 			if (currentStatus !== "running") {
 				currentStatus = "running";
-
-				const connectText = gameManager.getConnectUrl
-					? `, ${gameManager.getConnectUrl()} `
-					: "";
-				sendSystemChat(`${gameName} is up${connectText}!`);
 			}
-			return response.json({ status: currentStatus, playerCount, players });
+			return response.json({
+				status: currentStatus,
+				playerCount,
+				players,
+				connectUrl: gameManager.getConnectUrl(),
+			});
 		}
 	}
 	if ("unknown" === currentStatus) {
