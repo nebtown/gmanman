@@ -216,7 +216,7 @@ function initWebsocketListener(httpServer) {
 
 const gameMessageMeta = {};
 function initPlayerStatusPoller(knownGameApis) {
-	async function pollGameHealth({ id, name, url }) {
+	async function pollGameHealth({ id, game, name, url }) {
 		if (id === "valheim-zach") {
 			return;
 		}
@@ -233,7 +233,8 @@ function initPlayerStatusPoller(knownGameApis) {
 			const players = data.players || [];
 			const embed = new Discord.MessageEmbed()
 				.setTitle(`${name} is running`)
-				.setDescription(data.connectUrl || "");
+				.setDescription(data.connectUrl || "")
+				.setThumbnail(`https://gmanman.nebtown.info/icons/${game}.png`);
 			if (data.playerCount > 0) {
 				embed.addField(
 					`Players: ${data.playerCount}`,
