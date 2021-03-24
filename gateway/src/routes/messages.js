@@ -21,6 +21,20 @@ const {
 let mainChannel;
 let channels = {};
 
+async function getMainChannel() {
+	if (mainChannel) {
+		return mainChannel;
+	}
+	return new Promise(function (resolve, reject) {
+		(function waitFor() {
+			if (mainChannel) {
+				return resolve(mainChannel);
+			}
+			setTimeout(waitFor, 100);
+		})();
+	});
+}
+
 client.on("ready", async () => {
 	console.log(`Discord logged in as ${client.user.tag}!`);
 	try {
@@ -114,6 +128,51 @@ client.on("message", async (msg) => {
 			);
 			msg.reply(`Next map queued: ${nextMapMatch[1]}`);
 		}
+		const whoseOnServerMatch = msg.content.match(/(?:(?:\bwho.*on\w*\b)|(?:\bserver status (?:of\b)?)) ?(.*?)\??$/);
+		if (whoseOnServerMatch) {
+			async function repostGameInfo(gameId) {
+				if (gameMessageMeta[gameId] && gameMessageMeta[gameId].message) {
+					await gameMessageMeta[gameId].message.delete();
+					delete gameMessageMeta[gameId].message;
+				}
+				pollGameHealth(knownGameApis[gameId]);
+			}
+			const searchTerm = whoseOnServerMatch ? whoseOnServerMatch[1].toLowerCase() : '';
+			if (!searchTerm || searchTerm.includes('online') || searchTerm.includes('active')) {
+				// hit all online ones
+				Object.entries(gameMessageMeta).map(([id, meta]) => {
+					if (meta.message && meta.lastResponse && meta.lastResponse.playerCount > 0) {
+						repostGameInfo(id)
+					}
+				})
+			}
+			else if (whoseOnServerMatch[1]) {
+				let foundGameId;
+				for (let gameId in knownGameApis) {
+					if (
+						gameId.toLowerCase() == searchTerm ||
+						knownGameApis[gameId].name.toLowerCase() == searchTerm
+					) {
+						foundGameId = gameId;
+						break;
+					}
+				}
+				if (!foundGameId) {
+					for (let gameId in knownGameApis) {
+						if (
+							gameId.toLowerCase().includes(searchTerm) ||
+							knownGameApis[gameId].name.toLowerCase().includes(searchTerm)
+						) {
+							foundGameId = gameId;
+							break;
+						}
+					}
+				}
+				if (foundGameId) {
+					await repostGameInfo(foundGameId);
+				}
+			}
+		}
 	}
 	if (msgContainsGman || msg.channel.id === mainChannel.id) {
 		debugLog(
@@ -139,7 +198,7 @@ client
 
 router.post("/", async function (req, response) {
 	sendMessage(req.body.nick, req.body.message, req.body.channel).catch((err) =>
-		console.log(
+		console.warn(
 			`Discord: failed to send message ${req.body.nick}: ${req.body.message} because: ${err}`
 		)
 	);
@@ -153,7 +212,9 @@ router.get("/send", async function (req, response) {
 
 let lastNickname = "";
 async function sendMessage(nickname, message, channelId) {
-	const channel = channelId ? await getChannel(channelId) : mainChannel;
+	const channel = channelId
+		? await getChannel(channelId)
+		: await getMainChannel();
 	debugLog(`Discord sending ${nickname}: ${message}`);
 	if (!channel) {
 		console.warn("Discord: Not connected to channel", channelId);
@@ -215,61 +276,98 @@ function initWebsocketListener(httpServer) {
 }
 
 const gameMessageMeta = {};
-function initPlayerStatusPoller(knownGameApis) {
-	async function pollGameHealth({ id, game, name, url }) {
-		if (id === "valheim-zach") {
-			return;
-		}
-		if (!gameMessageMeta[id]) {
-			gameMessageMeta[id] = {};
-		}
-		const { data } = await axios({
-			method: "GET",
-			url: `${url}/control`,
-			timeout: 8000,
-		});
-		if (data.status === "running") {
-			console.log("found running", data);
-			const players = data.players || [];
-			const embed = new Discord.MessageEmbed()
-				.setTitle(`${name} is running`)
-				.setDescription(data.connectUrl || "")
-				.setThumbnail(`https://gmanman.nebtown.info/icons/${game}.png`);
-			if (data.playerCount > 0) {
-				embed.addField(
-					`Players: ${data.playerCount}`,
-					players
-						.map(({ name }) => name)
-						.filter(Boolean)
-						.join(", ") || "-",
-					true
-				);
-			}
-			try {
-				if (!gameMessageMeta[id].message) {
-					gameMessageMeta[id].message = await sendMessage("", embed);
-				} else {
-					gameMessageMeta[id].message = await gameMessageMeta[id].message.edit(
-						embed
-					);
-				}
-			} catch (err) {
-				console.error("Failed to edit message: ", err);
-			}
-		} else if (["stopping", "stopped"].includes(data.status)) {
-			if (gameMessageMeta[id].message) {
-				const embed = new Discord.MessageEmbed().setTitle(
-					`${name} was running`
-				);
-				await gameMessageMeta[id].message.edit(embed);
-				delete gameMessageMeta[id].message;
-			}
-		}
-		gameMessageMeta[id].lastStatus = data.status;
+let knownGameApis = {};
+async function pollGameHealth({ id, game, name, url }) {
+	if (id === "valheim-zach") {
+		return;
 	}
-	setInterval(() => {
-		Object.values(knownGameApis).map(pollGameHealth);
-	}, 10000);
+	if (!gameMessageMeta[id]) {
+		gameMessageMeta[id] = {};
+	}
+	const { data } = await axios({
+		method: "GET",
+		url: `${url}/control`,
+		timeout: 8000,
+	});
+	if (data.status === "running") {
+		const players = data.players || [];
+		const embed = new Discord.MessageEmbed()
+			.setTitle(`${name} is running`)
+			.setDescription(data.connectUrl || "")
+			.setThumbnail(`https://gmanman.nebtown.info/icons/${game}.png`);
+		if (data.playerCount > 0) {
+			embed.addField(
+				`Players: ${data.playerCount}`,
+				players
+					.map(({ name }) => name)
+					.filter(Boolean)
+					.join(", ") || "-",
+				true
+			);
+		}
+		try {
+			if (!gameMessageMeta[id].message) {
+				gameMessageMeta[id].message = await sendMessage("", embed);
+			} else {
+				gameMessageMeta[id].message = await gameMessageMeta[id].message.edit(
+					embed
+				);
+			}
+		} catch (err) {
+			console.error("Failed to edit message: ", err);
+		}
+	} else if (["stopping", "stopped"].includes(data.status)) {
+		if (gameMessageMeta[id].message) {
+			const embed = new Discord.MessageEmbed().setTitle(`${name} was running`);
+			await gameMessageMeta[id].message.edit(embed);
+			delete gameMessageMeta[id].message;
+		}
+	}
+	gameMessageMeta[id].lastResponse = data;
+}
+const savedMessagesFilePath = "/tmp/gmanman-gateway-known-messages.json";
+async function fileExists(path) {
+	return !!(await fs.promises.stat(path).catch((e) => false));
+}
+async function initPlayerStatusPoller(_knownGameApis) {
+	knownGameApis = _knownGameApis;
+
+	try {
+		const messagesStr =
+			(await fileExists(savedMessagesFilePath)) &&
+			(await fs.promises.readFile(savedMessagesFilePath));
+		if (messagesStr) {
+			const storedMessages = JSON.parse(messagesStr);
+			const mainChannel = await getMainChannel();
+			await Promise.all(
+				Object.keys(storedMessages).map(async (id) => {
+					if (!gameMessageMeta[id]) {
+						gameMessageMeta[id] = {};
+					}
+					gameMessageMeta[id].message = await mainChannel.messages.fetch(
+						storedMessages[id]
+					);
+				})
+			);
+		}
+	} catch (e) {
+		console.warn("initPlayerStatusPoller reading storedMessages error:", e);
+	}
+
+	setInterval(async () => {
+		await Promise.all(Object.values(knownGameApis).map(pollGameHealth));
+		await fs.promises.writeFile(
+			savedMessagesFilePath,
+			JSON.stringify(
+				Object.keys(gameMessageMeta).reduce((carry, id) => {
+					if (gameMessageMeta[id].message) {
+						carry[id] = gameMessageMeta[id].message.id;
+					}
+					return carry;
+				}, {})
+			)
+		);
+	}, 8000);
 }
 
 module.exports = {
