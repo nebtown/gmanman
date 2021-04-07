@@ -15,6 +15,12 @@ html {
 	&.starting .game-icon {
 		animation: wobble-vertical 0.8s linear 0s infinite;
 	}
+	&.game-card--big {
+		@media screen and (min-width: 800px) {
+			transform: translateX(50%) translateY(50%) scale(2);
+			position: relative;
+		}
+	}
 }
 @keyframes wobble-vertical {
 	0% {

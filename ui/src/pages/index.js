@@ -119,18 +119,29 @@ export default () => {
 			{!isSSR && (
 				<React.Suspense fallback={<div />}>
 					<Grid container spacing={5} component="main">
-						{games.map(({ game, id, name, ...gameProps }) => (
-							<Grid item key={id} xs={12} sm={6} md={4}>
-								<ServerCard
-									game={game}
-									id={id}
-									title={name}
-									icon={`/icons/${game}.png`}
-									baseUrl={`${gatewayUrl}${id}/`}
-									{...gameProps}
-								/>
-							</Grid>
-						))}
+						{games
+							.filter(({ id, name }) => {
+								if (query.id) {
+									return id === query.id;
+								}
+								if (query.name) {
+									return name.toLowerCase().includes(query.name.toLowerCase());
+								}
+								return true;
+							})
+							.map(({ game, id, name, ...gameProps }) => (
+								<Grid item key={id} xs={12} sm={6} md={4}>
+									<ServerCard
+										game={game}
+										id={id}
+										title={name}
+										icon={`/icons/${game}.png`}
+										baseUrl={`${gatewayUrl}${id}/`}
+										className={query.id ? 'game-card--big' : ''}
+										{...gameProps}
+									/>
+								</Grid>
+							))}
 
 						{april1 && (
 							<Grid item xs={12} sm={6} md={4}>

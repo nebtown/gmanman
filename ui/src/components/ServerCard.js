@@ -33,6 +33,7 @@ import BackupsViewer from "./BackupsViewer";
 import ConfirmationModal from "./ConfirmationModal";
 
 ServerCard.propTypes = {
+	className: PropTypes.string,
 	game: PropTypes.string,
 	id: PropTypes.string,
 	title: PropTypes.string.isRequired,
@@ -43,6 +44,7 @@ ServerCard.propTypes = {
 };
 
 export default function ServerCard({
+	className,
 	game,
 	id,
 	title,
@@ -177,7 +179,7 @@ export default function ServerCard({
 	return (
 		<Card
 			raised={["starting", "running", "stopping", "updating"].includes(status)}
-			className={`game-card ${status}`}
+			className={`game-card ${status} ${className}`}
 		>
 			<CardHeader title={title} />
 			<CardContent>
