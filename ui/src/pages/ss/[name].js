@@ -7,29 +7,45 @@ import queryString from "query-string";
 import { List, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 
-import Container from "@material-ui/core/Container";
+import { makeStyles } from '@material-ui/core/styles';
+import Slider from "@material-ui/core/Slider";
 
-export default ({name}) => {
+const useStyles = makeStyles({
+	root: {
+		width: '98%',
+	},
+});
+
+
+// https://codesandbox.io/s/7y66p25qv6 looks neat for a grid-er view, unsure how to "scroll to image" then though
+
+export default ({ name }) => {
 	const isSSR = typeof window === "undefined";
 	const [list, setList] = useState([]);
-	const imageHeight = 150;
+	const [imageHeight, setImageHeight] = useState(150);
+	const classes = useStyles();
 	const rowHeight = imageHeight + 5;
+
+	function scrollToHash() {
+		if (list.length === 0 || location.hash.length <= 1) {
+			return;
+		}
+		const resume = location.hash.substr(1);
+		const index = list.indexOf(resume);
+		if (index !== -1) {
+			setForceScrollTop(index * rowHeight);
+		}
+	}
+	useEffect(scrollToHash, [list, imageHeight]);
+
 	useEffect(() => {
 		async function fetch() {
 			const { data } = await axios.get(
-				`http://nebtown.info/ss/ssviewer.php?name=${name}&format=json`
+				`https://nebtown.info/ss/ssviewer.php?name=${name}&format=json`
 			);
 			const newList = data.images;
 			newList.reverse();
 			setList(newList);
-
-			if (location.hash.length > 1) {
-				const resume = location.hash.substr(1);
-				const index = newList.indexOf(resume);
-				if (index !== -1) {
-					setForceScrollTop(index * rowHeight);
-				}
-			}
 		}
 		fetch();
 	}, [name]);
@@ -49,55 +65,72 @@ export default ({name}) => {
 			scrollTopRef.current = scrollTop;
 			if (list.length > 0) {
 				window.location.hash =
-					"#" + list[Math.min(list.length, Math.floor(scrollTop / rowHeight))];
+					"#" +
+					list[
+						Math.max(
+							0,
+							Math.min(list.length, Math.floor(scrollTop / rowHeight))
+						)
+					];
 			}
 		},
-		[scrollTopRef, list]
+		[scrollTopRef, list, rowHeight]
 	);
 
 	let renderedContainer = (
-		<Container>
+		<div style={{ width: "calc(100vw - 1rem)", height: "calc(100vh - 3.5rem)" }}>
 			<Helmet>
 				<title>SSGrid</title>
 			</Helmet>
-			<div
-				style={{ width: "calc(100vw - 3rem)", height: "calc(100vh - 3rem)" }}
-			>
-				<AutoSizer>
-					{({ height, width }) => (
-						<List
-							scrollTop={forceScrollTop}
-							onScroll={onScroll}
-							width={width}
-							height={height}
-							rowCount={list.length}
-							rowHeight={rowHeight}
-							rowRenderer={({ key, index, isScrolling, isVisible, style }) => (
-								<div
-									key={key}
-									style={{
-										...style,
-										height: rowHeight,
-										width,
-										paddingBottom: 5,
-									}}
+			Lookin at {name}'s Screenshots
+			<Slider
+				defaultValue={imageHeight}
+				className={classes.root}
+				aria-labelledby="discrete-slider"
+				valueLabelDisplay="auto"
+				step={25}
+				marks
+				min={50}
+				max={400}
+				onChange={(e, value) => {
+					setImageHeight(value);
+				}}
+			/>
+			<AutoSizer>
+				{({ height, width }) => (
+					<List
+						scrollTop={forceScrollTop}
+						onScroll={onScroll}
+						width={width}
+						height={height}
+						rowCount={list.length}
+						rowHeight={rowHeight}
+						rowRenderer={({ key, index, isScrolling, isVisible, style }) => (
+							<div
+								key={key}
+								className="ss-container"
+								style={{
+									...style,
+									height: rowHeight,
+									width,
+									paddingBottom: 5,
+								}}
+							>
+								<a
+									href={`https://nebtown.info/ss/${name}/${list[index]}`}
+									target="_blank"
 								>
-									<a
-										href={`http://nebtown.info/ss/${name}/${list[index]}`}
-										target="_blank"
-									>
-										<img
-											height={imageHeight}
-											src={`http://nebtown.info/ss/${name}/${list[index]}`}
-										/>
-									</a>
-								</div>
-							)}
-						/>
-					)}
-				</AutoSizer>
-			</div>
-		</Container>
+									<img
+										height={imageHeight}
+										src={`https://nebtown.info/ss/${name}/${list[index]}`}
+									/>
+								</a>
+							</div>
+						)}
+					/>
+				)}
+			</AutoSizer>
+		</div>
 	);
 	return renderedContainer;
 };
