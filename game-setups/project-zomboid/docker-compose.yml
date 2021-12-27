@@ -1,0 +1,21 @@
+version: "3.6"
+
+services:
+  project-zomboid:
+    container_name: project-zomboid
+    image: afey/zomboid
+    restart: unless-stopped
+    environment:
+      SERVER_NAME: "pzserver"
+      SERVER_PUBLIC_NAME: "Zombies!"
+      SERVER_PASSWORD: ""
+      ADMIN_PASSWORD: "admin-pass"
+      RCON_PASSWORD: "rcon-pass"
+    ports:
+      - "8766:8766/udp"
+      - "8767:8767/udp"
+      - "16261:16261/udp"
+      - "16262-16272:16262-16272"
+      - "27015:27015"
+    volumes:
+      - ./server-data:/server-data

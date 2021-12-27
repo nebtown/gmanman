@@ -146,7 +146,7 @@ app.get("/control", async (request, response) => {
 				status: currentStatus,
 				playerCount,
 				players,
-				connectUrl: gameManager.getConnectUrl(),
+				connectUrl: gameManager.getConnectUrl && gameManager.getConnectUrl(),
 			});
 		}
 	}
