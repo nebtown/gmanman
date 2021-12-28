@@ -135,7 +135,7 @@ app.get("/control", async (request, response) => {
 			(await gameManager.isProcessRunning()) &&
 			(await gameManager.getPlayers());
 		if (players !== false) {
-			const playerCount = players.length;
+			const playerCount = players.length !== undefined ? players.length : (players > 0 ? players : undefined);
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
 			);
