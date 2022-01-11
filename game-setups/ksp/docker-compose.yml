@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+    lunamultiplayer:
+        image: lunamultiplayer:local
+        build:
+          context: ./repo/
+          dockerfile: ./Dockerfile_Server
+          args:
+             # set to desired version, available versions: https://github.com/LunaMultiplayer/LunaMultiplayer/releases    
+             # may be unused now?
+             - LMP_VERSION=0.28.0
+        container_name: ksp
+        environment:
+            - TZ=PST
+        ports:
+            - '8800:8800/udp'
+            - '8900:8900'
+        volumes:
+            - '/servers/ksp/volume/Config:/LMPServer/Config'
+            - '/servers/ksp/volume/Universe:/LMPServer/Universe'
+            - '/servers/ksp/volume/Plugins:/LMPServer/Plugins'
+            - '/servers/ksp/volume/logs:/LMPServer/logs'
+        restart: unless-stopped
