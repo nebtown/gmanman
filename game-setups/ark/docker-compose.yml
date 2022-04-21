@@ -24,6 +24,7 @@ services:
     volumes:
       - ./volume:/ark
       - ./Saved:/ark/server/ShooterGame/Saved
+      - ./overrides/arkmanager:/usr/bin/arkmanager
     ports:
       - 7776:7776 # wat
       - 7776:7776/udp # wat

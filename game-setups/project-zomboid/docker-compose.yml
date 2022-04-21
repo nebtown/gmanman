@@ -7,10 +7,10 @@ services:
     restart: unless-stopped
     environment:
       SERVER_NAME: "pzserver"
-      SERVER_PUBLIC_NAME: "Zombies!"
-      SERVER_PASSWORD: ""
-      ADMIN_PASSWORD: "admin-pass"
-      RCON_PASSWORD: "rcon-pass"
+      SERVER_PUBLIC_NAME: "Nebtown Zombie Apocalypse"
+      SERVER_PASSWORD: "candyland"
+      ADMIN_PASSWORD: "candyland"
+      RCON_PASSWORD: "candyland"
     ports:
       - "8766:8766/udp"
       - "8767:8767/udp"
@@ -19,3 +19,4 @@ services:
       - "27015:27015"
     volumes:
       - ./server-data:/server-data
+      - ./server-files:/server-files

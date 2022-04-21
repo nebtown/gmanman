@@ -15,8 +15,6 @@ services:
             - '27015:27015/udp'
             - '27016:27016/udp'
         volumes:
-            - './volume/Submarines:/home/steam/barotrauma-dedicated/Submarines/mounted'
-            - './volume/Mods:/home/steam/barotrauma-dedicated/Mods'
-            - './volume/serversettings.xml:/home/steam/barotrauma-dedicated/serversettings.xml'
-            - './volume/config_player.xml:/home/steam/barotrauma-dedicated/config_player.xml'
             - './volume/saves:/home/steam/.local/share/Daedalic Entertainment GmbH/Barotrauma/Multiplayer'
+            - './volume:/home/steam/barotrauma-dedicated'
+            - './volume/Submarines:/home/steam/barotrauma-dedicated/Submarines/mounted'

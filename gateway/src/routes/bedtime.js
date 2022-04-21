@@ -1,5 +1,12 @@
 const momentTz = require("moment-timezone");
 const ytdl = require("ytdl-core");
+const {
+	joinVoiceChannel,
+	VoiceConnectionStatus,
+	createAudioPlayer,
+	createAudioResource,
+	AudioPlayerStatus,
+} = require("@discordjs/voice");
 
 const { findMember, arrayRandom } = require("./discordUtil");
 
@@ -61,17 +68,28 @@ function processBedtime(memberId, playSound = false) {
 		return;
 	}
 	const member = bedtimes[memberId].member;
-	member.fetch().then(async member => {
+	member.fetch().then(async (member) => {
 		console.log("inside fetch", member, member.voice.channel);
 		if (member && member.voice.channel) {
-			const connection = await member.voice.channel.join();
-			const stream = connection.play(
-				ytdl(arrayRandom(bedtimeSounds), { filter: "audioonly" }),
-				{ volume: 0.5 }
-			);
-			stream.on("finish", () => {
-				member.voice.kick("Bedtime!");
-				connection.disconnect();
+			const connection = joinVoiceChannel({
+				channelId: member.voice.channelId,
+				guildId: member.guild.id,
+				adapterCreator: member.guild.voiceAdapterCreator,
+			});
+
+			connection.on(VoiceConnectionStatus.Ready, () => {
+				const player = createAudioPlayer();
+				const ytStream = ytdl(arrayRandom(bedtimeSounds), {
+					filter: "audioonly",
+				});
+				const resource = createAudioResource(ytStream, { inlineVolume: true });
+				resource.volume.setVolume(0.5);
+				connection.subscribe(player);
+				player.play(resource);
+				player.on(AudioPlayerStatus.Idle, () => {
+					member.voice.kick("Bedtime!");
+					connection.destroy();
+				});
 			});
 
 			bedtimes[memberId].reply(
@@ -93,7 +111,7 @@ function handleCommandBedtime(msg, bedtimeMatch) {
 	if (targetTime) {
 		msg.guild.members
 			.fetch({ query: nickSearch })
-			.then(guildMembers => {
+			.then((guildMembers) => {
 				const target = findMember(guildMembers, nickSearch);
 				if (target) {
 					const targetId = target.id;

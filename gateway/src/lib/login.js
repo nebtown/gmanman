@@ -6,16 +6,15 @@ const googleJWKSClient = jwksClient({
 	jwksUri: "https://www.googleapis.com/oauth2/v3/certs",
 	cache: true,
 });
-function getGoogleJWTKey(header, callback) {
-	googleJWKSClient.getSigningKey(header.kid, function(err, key) {
-		if (err) {
-			console.log("failed getting Google JWT Key:", err);
-			callback(err);
-			return;
-		}
+async function getGoogleJWTKey(header, callback) {
+	try {
+		const key = await googleJWKSClient.getSigningKey(header.kid);
 		const signingKey = key.publicKey || key.rsaPublicKey;
 		callback(null, signingKey);
-	});
+	} catch (err) {
+		console.log("failed getting Google JWT Key:", err);
+		callback(err);
+	}
 }
 
 function verifyGoogleJWT(token) {

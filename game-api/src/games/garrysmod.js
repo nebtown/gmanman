@@ -19,6 +19,7 @@ module.exports = class GarrysmodManager extends GenericDockerManager {
 			})
 			.catch(e => {
 				console.error("update error: ", e);
+				this.setStatus("stopped");
 			});
 	}
 	async getModsTodo() {}

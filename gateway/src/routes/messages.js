@@ -6,7 +6,13 @@ const axios = require("axios");
 
 const ytdl = require("ytdl-core");
 const Discord = require("discord.js");
-const client = new Discord.Client();
+const {
+	joinVoiceChannel,
+	VoiceConnectionStatus,
+	createAudioPlayer,
+	createAudioResource,
+	AudioPlayerStatus,
+} = require("@discordjs/voice");
 
 const { debugLog, discordToken, discordChannel } = require("../cliArgs");
 const { findMember } = require("./discordUtil");
@@ -16,6 +22,13 @@ const {
 	handleCommandBedtime,
 	handleCommandBedtimeClear,
 } = require("./bedtime");
+
+const client = new Discord.Client({
+	intents: [
+		Discord.Intents.FLAGS.GUILD_MESSAGES,
+		Discord.Intents.FLAGS.GUILD_VOICE_STATES,
+	],
+});
 
 /** @type TextChannel */
 let mainChannel;
@@ -55,7 +68,7 @@ async function getChannel(id) {
 	return channels[id];
 }
 
-client.on("message", async (msg) => {
+client.on("messageCreate", async (msg) => {
 	msg = /** @type Message */ msg;
 	if (msg.author.id === client.user.id) {
 		return;
@@ -99,13 +112,25 @@ client.on("message", async (msg) => {
 		const playMatch = msg.content.match(/\bplay \b(http.*youtu.*)\b/i);
 		if (playMatch) {
 			const url = playMatch[1];
-			if (msg.member.voice.channel) {
-				const connection = await msg.member.voice.channel.join();
-				const stream = connection.play(ytdl(url, { filter: "audioonly" }), {
-					volume: 0.5,
+			if (msg.member.voice.channelId) {
+				const connection = joinVoiceChannel({
+					channelId: msg.member.voice.channelId,
+					guildId: msg.member.guild.id,
+					adapterCreator: msg.member.guild.voiceAdapterCreator,
 				});
-				stream.on("finish", () => {
-					connection.disconnect();
+
+				connection.on(VoiceConnectionStatus.Ready, () => {
+					const player = createAudioPlayer();
+					const ytStream = ytdl(url, { filter: "audioonly" });
+					const resource = createAudioResource(ytStream, {
+						inlineVolume: true,
+					});
+					resource.volume.setVolume(0.5);
+					connection.subscribe(player);
+					player.play(resource);
+					player.on(AudioPlayerStatus.Idle, () => {
+						connection.destroy();
+					});
 				});
 			} else {
 				msg.reply(
@@ -215,7 +240,7 @@ async function sendMessage(nickname, message, channelId) {
 	const channel = channelId
 		? await getChannel(channelId)
 		: await getMainChannel();
-	debugLog(`Discord sending ${nickname}: ${message}`);
+	debugLog(`Discord sending ${nickname}: `, message);
 	if (!channel) {
 		console.warn("Discord: Not connected to channel", channelId);
 		return;
@@ -344,9 +369,13 @@ async function initPlayerStatusPoller(_knownGameApis) {
 					if (!gameMessageMeta[id]) {
 						gameMessageMeta[id] = {};
 					}
-					gameMessageMeta[id].message = await mainChannel.messages.fetch(
-						storedMessages[id]
-					);
+					try {
+						gameMessageMeta[id].message = await mainChannel.messages.fetch(
+							storedMessages[id]
+						);
+					} catch (e) {
+						console.warn("Discord: startup failed to read message", id, e);
+					}
 				})
 			);
 		}
@@ -355,18 +384,29 @@ async function initPlayerStatusPoller(_knownGameApis) {
 	}
 
 	setInterval(async () => {
-		await Promise.all(Object.values(knownGameApis).map(pollGameHealth));
-		await fs.promises.writeFile(
-			savedMessagesFilePath,
-			JSON.stringify(
-				Object.keys(gameMessageMeta).reduce((carry, id) => {
-					if (gameMessageMeta[id].message) {
-						carry[id] = gameMessageMeta[id].message.id;
-					}
-					return carry;
-				}, {})
-			)
-		);
+		try {
+			await Promise.all(Object.values(knownGameApis).map(pollGameHealth));
+		} catch (err) {
+			console.warn("Discord PlayerStatusPoller error: ", err.message);
+		}
+		try {
+			await fs.promises.writeFile(
+				savedMessagesFilePath,
+				JSON.stringify(
+					Object.keys(gameMessageMeta).reduce((carry, id) => {
+						if (gameMessageMeta[id].message) {
+							carry[id] = gameMessageMeta[id].message.id;
+						}
+						return carry;
+					}, {})
+				)
+			);
+		} catch (err) {
+			console.warn(
+				"Discord failed to write savedMessages error: ",
+				err.message
+			);
+		}
 	}, 8000);
 }
 

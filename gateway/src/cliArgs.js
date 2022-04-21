@@ -4,7 +4,7 @@ const argv = require("minimist")(process.argv.slice(2), {
 
 function debugLog(...args) {
 	if (argv.v) {
-		console.log(...args);
+		console.log(new Date().toISOString(), ...args);
 	}
 }
 

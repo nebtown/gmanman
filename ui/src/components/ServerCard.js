@@ -279,7 +279,7 @@ export default function ServerCard({
 				{supportsBackup && (
 					<Button
 						size="small"
-						disabled={!isAdmin || status !== "stopped"}
+						disabled={!isAdmin}
 						onClick={() => {
 							setBackupsOpen(true);
 						}}
