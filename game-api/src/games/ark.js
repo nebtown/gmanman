@@ -10,12 +10,14 @@ const {
 	dockerLogRead,
 	readEnvFileCsv,
 	writeEnvFileCsv,
+	steamWorkshopGetModSearch,
 } = require("./common-helpers");
 
 module.exports = class ArkManager {
 	constructor({ getCurrentStatus, setStatus }) {
 		this.getCurrentStatus = getCurrentStatus;
 		this.setStatus = setStatus;
+		this.APPID = 346110;
 	}
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
@@ -74,6 +76,9 @@ module.exports = class ArkManager {
 	async setMods(modsList) {
 		await writeEnvFileCsv("ARK_MODS", modsList);
 		return true;
+	}
+	async getModSearch(query) {
+		return steamWorkshopGetModSearch(this.APPID, query);
 	}
 	async filesToBackup() {
 		return ["Saved", ".env"];

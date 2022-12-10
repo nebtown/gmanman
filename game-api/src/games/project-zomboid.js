@@ -1,9 +1,5 @@
-const { rconPort, debugLog, connectUrl } = require("../cliArgs");
-const {
-	dockerComposeStop,
-	gamedigQueryPlayers,
-	rconConnect,
-} = require("./common-helpers");
+const { debugLog, connectUrl } = require("../cliArgs");
+const { dockerComposeStop, gamedigQueryPlayers } = require("./common-helpers");
 const GenericDockerManager = require("./docker");
 
 module.exports = class ProjectZomboidManager extends GenericDockerManager {
@@ -12,8 +8,7 @@ module.exports = class ProjectZomboidManager extends GenericDockerManager {
 	}
 	async stop() {
 		try {
-			const response = await (await rconConnect(rconPort || '27015')).send("quit");
-			debugLog("Stop rcon response:", response);
+			await this.rcon("quit");
 		} catch (e) {
 			console.log("stop rcon error:", e);
 		}

@@ -17,7 +17,10 @@ module.exports = {
 				disableMinification: true,
 			},
 		},
-		`gatsby-plugin-sass`,
+		{
+		resolve: `gatsby-plugin-sass`,
+		options: {implementation: require('sass')},
+		},
 		`gatsby-transformer-json`,
 		{
 			resolve: `gatsby-source-filesystem`,
@@ -27,6 +30,5 @@ module.exports = {
 			},
 		},
 		`gatsby-plugin-react-helmet`,
-		`gatsby-plugin-favicon`,
 	],
 };

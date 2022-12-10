@@ -100,7 +100,7 @@ app.post("/register", (request, response) => {
 });
 
 app.all("/:gameId/*", async (request, response) => {
-	const { gameId, "0": endpoint } = request.params;
+	const { gameId, 0: endpoint } = request.params;
 	const gameApi = knownGameApis[gameId];
 	if (!gameApi) {
 		return response.status(404).json({ error: "GameIdNotFound" });

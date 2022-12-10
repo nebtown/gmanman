@@ -6,15 +6,16 @@ const GenericDockerManager = require("./docker");
 
 module.exports = class ValheimManager extends GenericDockerManager {
 	getConnectUrl() {
-		return `steam://connect/${connectUrl} (though use Steam Server browser)`;
+		return connectUrl;
 	}
 	async getPlayers() {
 		return await gamedigQueryPlayers({
-			type: "css", // Gamedig lacks Valheim but css is compatible
+			type: "valheim", // Gamedig lacks Valheim but css is compatible
 			socketTimeout: 4000,
 		});
 	}
-	async update() {
+	update = false; // updates on boot
+	/*async update() {
 		dockerComposePull()
 			.then(res => {
 				console.log("finished docker pull: ", res);
@@ -23,7 +24,7 @@ module.exports = class ValheimManager extends GenericDockerManager {
 			.catch(e => {
 				console.log("docker pull failed:", e);
 			});
-	}
+	}*/
 	async filesToBackup() {
 		return ["saves"];
 	}
