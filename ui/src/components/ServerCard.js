@@ -11,6 +11,7 @@ import CardHeader from "@material-ui/core/CardHeader";
 import Button from "@material-ui/core/Button";
 import CardMedia from "@material-ui/core/CardMedia";
 import Grid from "@material-ui/core/Grid";
+import Tooltip from "@material-ui/core/Tooltip";
 
 import StartIcon from "@material-ui/icons/PlayArrow";
 import StopIcon from "@material-ui/icons/Stop";
@@ -77,6 +78,7 @@ export default function ServerCard({
 		"unknown",
 	]), */
 	const [numPlayers, setNumPlayers] = useState(-1);
+	const [players, setPlayers] = useState([]);
 	const [logOpen, setLogOpen] = useState(false);
 	const logOffset = useRef(-1000);
 	const logFetchRunning = useRef(false);
@@ -91,10 +93,15 @@ export default function ServerCard({
 		}
 		try {
 			const {
-				data: { status: newStatus, playerCount: newNumPlayers },
+				data: {
+					status: newStatus,
+					playerCount: newNumPlayers,
+					players: newPlayers,
+				},
 			} = await axios.get(controlUrl);
 			setStatus(newStatus);
 			setNumPlayers(newNumPlayers !== null ? newNumPlayers : -1);
+			setPlayers(newPlayers || []);
 		} catch (e) {
 			console.warn(`Cannot poll ${title}, ${e.message}`);
 			setStatus("unknown");
@@ -201,6 +208,24 @@ export default function ServerCard({
 											` with ${
 												numPlayers !== undefined ? numPlayers : "?"
 											} players`}
+										{players.length > 0 && (
+											<Tooltip
+												title={players.map(({ name }) => name).join(", ")}
+											>
+												<div
+													style={{
+														textAlign: "right",
+														maxWidth: "9rem",
+														textOverflow: "ellipsis",
+														overflow: "hidden",
+														whiteSpace: "nowrap",
+														fontSize: "0.8rem",
+													}}
+												>
+													{players.map(({ name }) => name).join(", ")}
+												</div>
+											</Tooltip>
+										)}
 									</Grid>
 								</Grid>
 							</Grid>

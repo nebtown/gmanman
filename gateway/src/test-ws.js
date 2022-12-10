@@ -11,6 +11,6 @@ ws.on("open", () => {
 	);
 });
 
-ws.on("message", data => {
+ws.on("messageCreated", (data) => {
 	console.log("Received ", data);
 });

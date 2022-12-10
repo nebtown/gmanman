@@ -257,19 +257,24 @@ async function sendMessage(nickname, message, channelId) {
 		return;
 	}
 	let discordNickname = "Gman";
-	if (nickname && nickname !== "Gman") {
+	if (nickname && nickname !== "Gman" && !message.title) {
 		message = `${nickname}: ${message}`;
 	}
 	try {
 		if (discordNickname !== lastNickname) {
 			lastNickname = discordNickname;
-			await channel.guild.me.setNickname(discordNickname);
+			if (channel.guild.me) {
+				// this seemed to be null in discordjs v13... unsure why?
+				await channel.guild.me.setNickname(discordNickname);
+			}
 		}
 		if (message.match && message.match(/]\(https?:\/\//)) {
 			const embed = new Discord.MessageEmbed().setDescription(message);
-			return await channel.send(embed);
+			return await channel.send({ embeds: [embed] });
+		} else if (message.title) {
+			return await channel.send({ embeds: [message] });
 		} else {
-			return await channel.send(message);
+			return await channel.send({ content: message });
 		}
 	} catch (err) {
 		console.error(`Discord sendMessage error: ${err}`);
@@ -280,7 +285,7 @@ const wsServer = new WebSocket.Server({ noServer: true });
 const wsConnections = [];
 
 wsServer.on("connection", (ws) => {
-	ws.on("message", (message) => {
+	ws.on("messageCreate", (message) => {
 		console.debug(`WS Received: ${message}`);
 		const request = JSON.parse(message);
 		if (request.type === "message") {
@@ -332,22 +337,32 @@ async function pollGameHealth({ id, game, name, url }) {
 			.setDescription(data.connectUrl || "")
 			.setThumbnail(`https://gmanman.nebtown.info/icons/${game}.png`);
 		if (data.playerCount > 0) {
-			embed.addField(
-				`Players: ${data.playerCount}`,
-				players
-					.map(({ name }) => name)
-					.filter(Boolean)
-					.join(", ") || "-",
-				true
-			);
+			const playerNamesText = players
+				.map(({ name }) => name)
+				.filter(Boolean)
+				.join(", ");
+			if (playerNamesText) {
+				embed.addField(
+					`Players: ${data.playerCount}`,
+					players
+						.map(({ name }) => name)
+						.filter(Boolean)
+						.join(", ") || "-",
+					true
+				);
+			} else {
+				embed.setDescription(
+					embed.description + `\nPlayers: ${data.playerCount}`
+				);
+			}
 		}
 		try {
 			if (!gameMessageMeta[id].message) {
 				gameMessageMeta[id].message = await sendMessage("", embed);
 			} else {
-				gameMessageMeta[id].message = await gameMessageMeta[id].message.edit(
-					embed
-				);
+				gameMessageMeta[id].message = await gameMessageMeta[id].message.edit({
+					embeds: [embed],
+				});
 			}
 		} catch (err) {
 			console.error("Failed to edit message: ", err);
@@ -355,7 +370,7 @@ async function pollGameHealth({ id, game, name, url }) {
 	} else if (["stopping", "stopped"].includes(data.status)) {
 		if (gameMessageMeta[id].message) {
 			const embed = new Discord.MessageEmbed().setTitle(`${name} was running`);
-			await gameMessageMeta[id].message.edit(embed);
+			await gameMessageMeta[id].message.edit({ embeds: [embed] });
 			delete gameMessageMeta[id].message;
 		}
 	}
