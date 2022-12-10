@@ -41,8 +41,8 @@ async function dockerIsProcessRunning() {
 	const container = docker.getContainer(gameId);
 	return await container
 		.inspect()
-		.then(containerDetails => containerDetails.State.Running)
-		.catch(reason => false);
+		.then((containerDetails) => containerDetails.State.Running)
+		.catch((reason) => false);
 }
 async function dockerLogs() {
 	try {
@@ -79,14 +79,9 @@ async function dockerLogStreamStart(container) {
 	});
 	this.logStream = logStream;
 
-	logStream.on("data", chunk => {
+	logStream.on("data", (chunk) => {
 		console.log("D", chunk.toString("utf8").trimEnd());
-		logCache.push(
-			...chunk
-				.toString("utf8")
-				.trimEnd()
-				.split("\n")
-		);
+		logCache.push(...chunk.toString("utf8").trimEnd().split("\n"));
 		if (logCache.length > 15000) {
 			logCache.splice(0, logCache.length - 10000);
 		}
@@ -97,7 +92,7 @@ async function dockerLogStreamStart(container) {
 	});
 
 	// delay so we can get some logs
-	return await new Promise(resolve =>
+	return await new Promise((resolve) =>
 		setTimeout(() => resolve(logStream), 500)
 	);
 }
@@ -142,7 +137,7 @@ async function readEnvFileCsv(envName) {
 	return (env[envName] || "")
 		.trim()
 		.split(",")
-		.map(id => ({ id, enabled: true }));
+		.map((id) => ({ id, enabled: true }));
 }
 
 async function writeEnvFileCsv(envName, modsList) {

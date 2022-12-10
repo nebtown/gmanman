@@ -123,9 +123,9 @@ function handleCommandBedtime(msg, bedtimeMatch) {
 					const targetTimeMs = targetTime.valueOf();
 					const delay = targetTimeMs - currentTimeMs;
 					console.debug(
-						`Setting bedtime of ${
-							target.displayName
-						} to ${targetTime} in ${delay / 60000} minutes`
+						`Setting bedtime of ${target.displayName} to ${targetTime} in ${
+							delay / 60000
+						} minutes`
 					);
 
 					bedtimes[targetId] = {
@@ -139,7 +139,7 @@ function handleCommandBedtime(msg, bedtimeMatch) {
 								(1 + Math.random() * 4) * 60000
 							);
 						}, delay),
-						reply: text => msg.reply(text),
+						reply: (text) => msg.reply(text),
 					};
 					const timeHhmm = targetTime.format("hh:mm");
 					msg.reply(
@@ -153,7 +153,7 @@ function handleCommandBedtime(msg, bedtimeMatch) {
 
 function handleCommandBedtimeClear(msg, bedtimeClearMatch) {
 	const nickSearch = bedtimeClearMatch[1].toLowerCase();
-	msg.guild.members.fetch({ query: nickSearch }).then(guildMembers => {
+	msg.guild.members.fetch({ query: nickSearch }).then((guildMembers) => {
 		const target = findMember(guildMembers, nickSearch);
 		if (target && bedtimes[target.id]) {
 			clearTimeout(bedtimes[target.id].timer);

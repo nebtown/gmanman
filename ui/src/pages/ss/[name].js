@@ -7,15 +7,14 @@ import queryString from "query-string";
 import { List, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from "@material-ui/core/styles";
 import Slider from "@material-ui/core/Slider";
 
 const useStyles = makeStyles({
 	root: {
-		width: '98%',
+		width: "98%",
 	},
 });
-
 
 // https://codesandbox.io/s/7y66p25qv6 looks neat for a grid-er view, unsure how to "scroll to image" then though
 
@@ -78,7 +77,9 @@ export default ({ name }) => {
 	);
 
 	let renderedContainer = (
-		<div style={{ width: "calc(100vw - 1rem)", height: "calc(100vh - 3.5rem)" }}>
+		<div
+			style={{ width: "calc(100vw - 1rem)", height: "calc(100vh - 3.5rem)" }}
+		>
 			<Helmet>
 				<title>SSGrid</title>
 			</Helmet>

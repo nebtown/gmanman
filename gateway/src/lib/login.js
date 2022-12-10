@@ -23,7 +23,7 @@ function verifyGoogleJWT(token) {
 			ignoreExpiration: true,
 			maxAge: "7d",
 		};
-		jwt.verify(token, getGoogleJWTKey, jwtOptions, function(err, decoded) {
+		jwt.verify(token, getGoogleJWTKey, jwtOptions, function (err, decoded) {
 			if (err) {
 				reject(err);
 			} else {

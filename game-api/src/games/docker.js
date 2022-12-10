@@ -43,10 +43,9 @@ module.exports = class GenericDockerManager {
 	async rcon(command) {
 		debugLog(`Running rcon: ${command}`);
 		try {
-			const response = await (await rconSRCDSConnect(rconPort)).command(
-				command,
-				500
-			);
+			const response = await (
+				await rconSRCDSConnect(rconPort)
+			).command(command, 500);
 			debugLog(`Rcon response: ${response}`);
 			return true;
 		} catch (e) {
@@ -56,20 +55,20 @@ module.exports = class GenericDockerManager {
 	}
 	async update() {
 		dockerComposePull()
-			.then(res => {
+			.then((res) => {
 				console.log("finished docker pull: ", res);
 				this.setStatus("stopped");
 			})
-			.catch(e => {
+			.catch((e) => {
 				console.log("docker pull failed:", e, ", attempting build:");
 				dockerComposeBuild({
 					commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],
 				})
-					.then(res => {
+					.then((res) => {
 						console.log("finished update: ", res);
 						this.setStatus("stopped");
 					})
-					.catch(e => {
+					.catch((e) => {
 						console.error("update error: ", e);
 					});
 			});

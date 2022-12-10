@@ -10,7 +10,7 @@ module.exports = {
 	stat: util.promisify(fs.stat),
 };
 
-module.exports.exists = async fileName => {
+module.exports.exists = async (fileName) => {
 	try {
 		await module.exports.access(fileName);
 		return true;

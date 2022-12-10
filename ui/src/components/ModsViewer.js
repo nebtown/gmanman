@@ -103,7 +103,7 @@ export default function ModsViewer({
 										edge="end"
 										onChange={() => {
 											setModsList(
-												modsList.map(mod => {
+												modsList.map((mod) => {
 													if (mod.id === id) {
 														mod.enabled = !mod.enabled;
 													}

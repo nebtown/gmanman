@@ -148,7 +148,7 @@ export default function ModsSearch({
 	]);
 
 	// Serverside Search for mods (partial clientside filtering)
-	const queryServerSearch = async query => {
+	const queryServerSearch = async (query) => {
 		if (!query || query.length < 3) {
 			return;
 		}
@@ -186,8 +186,8 @@ export default function ModsSearch({
 					onChange={(event, option) => {
 						setModIdInput(option ? option.id : "");
 					}}
-					getOptionLabel={option => option.label || option.id}
-					renderOption={option => {
+					getOptionLabel={(option) => option.label || option.id}
+					renderOption={(option) => {
 						if (option.label) {
 							return (
 								<div style={{ padding: "6px 16px" }}>
@@ -215,13 +215,13 @@ export default function ModsSearch({
 					options={options}
 					loading={loading}
 					noOptionsText="No mods found"
-					renderInput={params => (
+					renderInput={(params) => (
 						<TextField
 							{...params}
 							id="new-mod-field"
 							margin="dense"
 							variant="outlined"
-							onChange={event =>
+							onChange={(event) =>
 								useServersideSearch &&
 								debouncedQueryServerSearch(event.target.value)
 							}
@@ -244,7 +244,7 @@ export default function ModsSearch({
 					id="new-mod-field"
 					label="New Mod ID"
 					value={modIdInput}
-					onChange={event => {
+					onChange={(event) => {
 						const val = event.target.value.replace(/[\r\n,]/, "");
 						setModIdInput(val);
 						setModTextInput(val);

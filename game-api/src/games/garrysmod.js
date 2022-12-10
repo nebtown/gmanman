@@ -13,11 +13,11 @@ module.exports = class GarrysmodManager extends GenericDockerManager {
 		dockerComposeBuild({
 			commandOptions: [["--build-arg", `TRIGGER_UPDATE=${Date.now()}`]],
 		})
-			.then(res => {
+			.then((res) => {
 				console.log("finished gmod update: ", res);
 				this.setStatus("stopped");
 			})
-			.catch(e => {
+			.catch((e) => {
 				console.error("update error: ", e);
 				this.setStatus("stopped");
 			});

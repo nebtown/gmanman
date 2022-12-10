@@ -20,12 +20,11 @@ LoginButton.propTypes = {
 };
 
 export default function LoginButton({ gatewayUrl }) {
-	const [loginToken, setLoginToken, delLoginToken] = useLocalStorage(
-		"googleLogin"
-	);
+	const [loginToken, setLoginToken, delLoginToken] =
+		useLocalStorage("googleLogin");
 	const [isAdmin, setIsAdmin, delIsAdmin] = useLocalStorage("isAdmin");
 	useAsyncEffect(
-		async isMounted => {
+		async (isMounted) => {
 			if (!tokenIsValid(loginToken)) {
 				delIsAdmin();
 				return;
@@ -63,14 +62,14 @@ export default function LoginButton({ gatewayUrl }) {
 				<GoogleLogin
 					clientId={oAuthClientId}
 					buttonText="Login"
-					onSuccess={async response => {
+					onSuccess={async (response) => {
 						console.debug("Google Login: Success", response);
 						setLoginToken({
 							...response.tokenObj,
 							...response.profileObj,
 						});
 					}}
-					onFailure={response => {
+					onFailure={(response) => {
 						console.warn("Google Login: Failure", response);
 					}}
 				/>

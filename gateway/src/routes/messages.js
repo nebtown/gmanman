@@ -153,7 +153,9 @@ client.on("messageCreate", async (msg) => {
 			);
 			msg.reply(`Next map queued: ${nextMapMatch[1]}`);
 		}
-		const whoseOnServerMatch = msg.content.match(/(?:(?:\bwho.*on\w*\b)|(?:\bserver status (?:of\b)?)) ?(.*?)\??$/);
+		const whoseOnServerMatch = msg.content.match(
+			/(?:(?:\bwho.*on\w*\b)|(?:\bserver status (?:of\b)?)) ?(.*?)\??$/
+		);
 		if (whoseOnServerMatch) {
 			async function repostGameInfo(gameId) {
 				if (gameMessageMeta[gameId] && gameMessageMeta[gameId].message) {
@@ -162,16 +164,25 @@ client.on("messageCreate", async (msg) => {
 				}
 				pollGameHealth(knownGameApis[gameId]);
 			}
-			const searchTerm = whoseOnServerMatch ? whoseOnServerMatch[1].toLowerCase() : '';
-			if (!searchTerm || searchTerm.includes('online') || searchTerm.includes('active')) {
+			const searchTerm = whoseOnServerMatch
+				? whoseOnServerMatch[1].toLowerCase()
+				: "";
+			if (
+				!searchTerm ||
+				searchTerm.includes("online") ||
+				searchTerm.includes("active")
+			) {
 				// hit all online ones
 				Object.entries(gameMessageMeta).map(([id, meta]) => {
-					if (meta.message && meta.lastResponse && meta.lastResponse.playerCount > 0) {
-						repostGameInfo(id)
+					if (
+						meta.message &&
+						meta.lastResponse &&
+						meta.lastResponse.playerCount > 0
+					) {
+						repostGameInfo(id);
 					}
-				})
-			}
-			else if (whoseOnServerMatch[1]) {
+				});
+			} else if (whoseOnServerMatch[1]) {
 				let foundGameId;
 				for (let gameId in knownGameApis) {
 					if (

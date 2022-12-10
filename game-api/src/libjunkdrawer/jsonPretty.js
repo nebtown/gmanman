@@ -1,3 +1,3 @@
 module.exports = {
-	jsonPretty: obj => JSON.stringify(obj, null, "\t"),
+	jsonPretty: (obj) => JSON.stringify(obj, null, "\t"),
 };

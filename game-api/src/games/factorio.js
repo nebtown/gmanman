@@ -44,7 +44,7 @@ module.exports = class FactorioManager {
 			console.warn("unexpected playerList:", playerList);
 			return false;
 		}
-		return [...new Array(Number(matches[1]))].map(_ => ({}));
+		return [...new Array(Number(matches[1]))].map((_) => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);
@@ -128,14 +128,18 @@ module.exports = class FactorioManager {
 		);
 	}
 	async filesToBackup() {
-		const saves = (await Promise.all(
-			(await fsPromises.readdir(path.join("volume", "saves"))).map(async v => ({
-				name: v,
-				time: (await fsPromises.stat(
-					path.join("volume", "saves", v)
-				)).mtime.getTime(),
-			}))
-		)).sort((a, b) => -(a.time - b.time));
+		const saves = (
+			await Promise.all(
+				(
+					await fsPromises.readdir(path.join("volume", "saves"))
+				).map(async (v) => ({
+					name: v,
+					time: (
+						await fsPromises.stat(path.join("volume", "saves", v))
+					).mtime.getTime(),
+				}))
+			)
+		).sort((a, b) => -(a.time - b.time));
 
 		return [
 			path.join("volume", "saves", saves[0].name),

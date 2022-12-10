@@ -23,10 +23,10 @@ const {
 
 const successTimeoutHandler = expressTimeoutHandler.handler({
 	timeout: 4000,
-	onTimeout: function(req, res) {
+	onTimeout: function (req, res) {
 		res.status(200).json({ pending: true });
 	},
-	onDelayedResponse: function(req, method, args, requestTime) {
+	onDelayedResponse: function (req, method, args, requestTime) {
 		const reqString = `${req.method} ${req.originalUrl}`;
 		console.log(`${reqString} responded late (${requestTime / 1000}s)`);
 	},
@@ -71,7 +71,7 @@ function sendSystemChat(message) {
 		.post(`${gatewayUrl}messages/`, {
 			message,
 		})
-		.catch(err => {
+		.catch((err) => {
 			console.error("Failed to register with Gateway", err.message);
 		});
 }
@@ -135,7 +135,12 @@ app.get("/control", async (request, response) => {
 			(await gameManager.isProcessRunning()) &&
 			(await gameManager.getPlayers());
 		if (players !== false) {
-			const playerCount = players.length !== undefined ? players.length : (players > 0 ? players : undefined);
+			const playerCount =
+				players.length !== undefined
+					? players.length
+					: players > 0
+					? players
+					: undefined;
 			debugLog(
 				`was ${currentStatus}, found playerCount ${playerCount}, set to running`
 			);

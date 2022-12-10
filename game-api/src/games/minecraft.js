@@ -36,7 +36,7 @@ module.exports = class MinecraftManager {
 			console.warn("playerList: ", playerList);
 			return false;
 		}
-		return [...new Array(Number(matches[1]))].map(_ => ({}));
+		return [...new Array(Number(matches[1]))].map((_) => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

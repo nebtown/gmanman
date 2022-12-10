@@ -26,7 +26,7 @@ async function listFiles(gameName) {
 	if (serviceAccount === "offline") {
 		try {
 			return (await fsPromises.readdir(path.join(gameDir, "backups"))).map(
-				file => ({ name: file })
+				(file) => ({ name: file })
 			);
 		} catch {
 			return [];

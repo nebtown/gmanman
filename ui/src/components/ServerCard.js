@@ -139,7 +139,7 @@ export default function ServerCard({
 				// eslint-disable-next-line require-atomic-updates
 				logOffset.current = data.offset;
 				if (data.logs) {
-					setLogLines(oldLogs => (oldLogs + "\n" + data.logs).trim());
+					setLogLines((oldLogs) => (oldLogs + "\n" + data.logs).trim());
 				}
 			} else if (data.logs !== undefined) {
 				setLogLines(data.logs);

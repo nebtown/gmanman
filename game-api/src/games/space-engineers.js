@@ -28,12 +28,12 @@ module.exports = class SpaceEngineersManager {
 	start() {
 		this.logData.push("\n\n\nLaunching...\n");
 		this.process = spawnProcess(path.join(gameDir, "Torch.Server.exe"));
-		this.process.stdout.on("data", data => {
+		this.process.stdout.on("data", (data) => {
 			let text = data.toString().trim();
 			debugLog(text);
 			this.logData.push(text.split("\n"));
 		});
-		this.process.stderr.on("data", data => {
+		this.process.stderr.on("data", (data) => {
 			let text = data.toString().trim();
 			debugLog(text);
 			this.logData.push(text.split("\n"));
@@ -74,9 +74,7 @@ module.exports = class SpaceEngineersManager {
 				({ $: { FriendlyName }, PublishedFileId }) => ({
 					id: PublishedFileId[0],
 					label: FriendlyName,
-					href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${
-						PublishedFileId[0]
-					}`,
+					href: `https://steamcommunity.com/sharedfiles/filedetails/?id=${PublishedFileId[0]}`,
 					enabled: true,
 				})
 			);
@@ -126,8 +124,8 @@ module.exports = class SpaceEngineersManager {
 		return [
 			path.join("Instance", "Saves", "LastSession.sbl"),
 			...(await fsPromises.readdir(path.join("Instance", "Saves", saveName)))
-				.filter(file => file !== "Backup")
-				.map(file => path.join("Instance", "Saves", saveName, file)),
+				.filter((file) => file !== "Backup")
+				.map((file) => path.join("Instance", "Saves", saveName, file)),
 			path.join("Instance", "Storage"),
 			path.join("Instance", "SpaceEngineers-Dedicated.cfg"),
 			path.join("Instance", "appworkshop_244850.acf"),

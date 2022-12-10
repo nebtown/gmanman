@@ -46,7 +46,7 @@ module.exports = class ArkManager {
 				exec.start(async (err, stream) => {
 					if (err) return reject();
 					let message = "";
-					stream.on("data", data => (message += data.toString()));
+					stream.on("data", (data) => (message += data.toString()));
 					stream.on("end", () => resolve(message));
 				});
 			});
@@ -61,7 +61,7 @@ module.exports = class ArkManager {
 			console.warn("playerList: ", response);
 			return false;
 		}
-		return [...new Array(Number(matches[1]))].map(_ => ({}));
+		return [...new Array(Number(matches[1]))].map((_) => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

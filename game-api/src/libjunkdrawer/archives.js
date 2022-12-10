@@ -32,7 +32,7 @@ async function makeBackup(backupFile, gameDir, filesToBackup) {
 
 	return new Promise((resolve, reject) => {
 		stream.on("end", resolve);
-		stream.on("error", err => {
+		stream.on("error", (err) => {
 			if (err.message === "unknown error" && err.stderr) {
 				err.message = err.stderr.trim().replace("\n", " ");
 			}

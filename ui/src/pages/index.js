@@ -101,7 +101,7 @@ export default () => {
 			{april1 && (
 				<>
 					<div style={{ textAlign: "center" }}>
-						{[...new Array(9)].map(i => (
+						{[...new Array(9)].map((i) => (
 							<img key={i} src="/con4.gif" />
 						))}
 					</div>
@@ -137,7 +137,7 @@ export default () => {
 										title={name}
 										icon={`/icons/${game}.png`}
 										baseUrl={`${gatewayUrl}${id}/`}
-										className={query.id ? 'game-card--big' : ''}
+										className={query.id ? "game-card--big" : ""}
 										{...gameProps}
 									/>
 								</Grid>

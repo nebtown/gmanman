@@ -3,7 +3,7 @@ function findMember(members, nick) {
 
 	/** @type GuildMember */
 	const member = members.find(
-		member =>
+		(member) =>
 			member.displayName.toLowerCase().includes(nickSearch) ||
 			(member.nickname && member.nickname.toLowerCase().includes(nickSearch))
 	);

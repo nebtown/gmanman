@@ -103,7 +103,7 @@ export default function LogViewer({
 			<DialogActions>
 				{rconUrl && (
 					<form
-						onSubmit={async e => {
+						onSubmit={async (e) => {
 							e.preventDefault();
 							setRconInput("");
 							if (rconHistory.length === 0 || rconHistory[0] !== rconInput) {
@@ -118,9 +118,9 @@ export default function LogViewer({
 							id="rcon"
 							label="rcon"
 							value={rconInput}
-							onChange={event => setRconInput(event.target.value)}
+							onChange={(event) => setRconInput(event.target.value)}
 							autoComplete="off"
-							onKeyDown={event => {
+							onKeyDown={(event) => {
 								if (event.key === "ArrowUp") {
 									setRconInput(rconHistory[rconHistoryId] || "");
 									setRconHistoryId(
