@@ -21,6 +21,12 @@ module.exports = {
 			resolve: `gatsby-plugin-sass`,
 			options: { implementation: require("sass") },
 		},
+		{
+			resolve: "gatsby-plugin-manifest",
+			options: {
+				icon: "src/favicon.png",
+			},
+		},
 		`gatsby-transformer-json`,
 		{
 			resolve: `gatsby-source-filesystem`,
