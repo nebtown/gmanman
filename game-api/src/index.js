@@ -147,11 +147,13 @@ app.get("/control", async (request, response) => {
 			if (currentStatus !== "running") {
 				currentStatus = "running";
 			}
+			const links = gameManager.getLinks ? gameManager.getLinks() : undefined;
 			return response.json({
 				status: currentStatus,
 				playerCount,
 				players,
 				connectUrl: gameManager.getConnectUrl && gameManager.getConnectUrl(),
+				links,
 			});
 		}
 	}

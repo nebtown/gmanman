@@ -19,9 +19,11 @@ import Card from "@material-ui/core/Card";
 const titleOptions = [
 	"GmanMan 2: Eclectic Boogaloo",
 	"GmanMan: mostly harmless",
-	"GmanMan Season 3",
+	"GmanMan Season 4",
 	"GmanMan: sew much more than a fabric store",
 	"GmanMan and other ores",
+	"GmanMan: safer than ChatGPT!",
+	"GmanMan: non-judgemental edition",
 ];
 const pageRandom = Math.random();
 

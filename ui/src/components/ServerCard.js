@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import { useLocalStorage } from "@rehooks/local-storage";
 
+import useMediaQuery from "@material-ui/core/useMediaQuery";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
@@ -67,6 +68,7 @@ export default function ServerCard({
 
 	const [isAdmin] = useLocalStorage("isAdmin");
 	const authedAxios = useAuthedAxios();
+	const smallScreen = useMediaQuery(`(max-width:400px)`);
 
 	const [status, setStatus] = useState("unknown");
 	/** status: PropTypes.oneOf([
@@ -79,6 +81,7 @@ export default function ServerCard({
 	]), */
 	const [numPlayers, setNumPlayers] = useState(-1);
 	const [players, setPlayers] = useState([]);
+	const [links, setLinks] = useState([]);
 	const [logOpen, setLogOpen] = useState(false);
 	const logOffset = useRef(-1000);
 	const logFetchRunning = useRef(false);
@@ -97,11 +100,13 @@ export default function ServerCard({
 					status: newStatus,
 					playerCount: newNumPlayers,
 					players: newPlayers,
+					links: newLinks,
 				},
 			} = await axios.get(controlUrl);
 			setStatus(newStatus);
 			setNumPlayers(newNumPlayers !== null ? newNumPlayers : -1);
 			setPlayers(newPlayers || []);
+			setLinks(newLinks || []);
 		} catch (e) {
 			console.warn(`Cannot poll ${title}, ${e.message}`);
 			setStatus("unknown");
@@ -183,21 +188,28 @@ export default function ServerCard({
 			: status === "updating"
 			? "Updating"
 			: "Status Unknown";
+
 	return (
 		<Card
 			raised={["starting", "running", "stopping", "updating"].includes(status)}
 			className={`game-card ${status} ${className}`}
 		>
 			<CardHeader title={title} />
-			<CardContent>
-				<Grid container direction="row" alignItems="center" spacing={1}>
+			<CardContent style={{ minHeight: "96px" }}>
+				<Grid
+					container
+					direction="row"
+					alignItems="center"
+					wrap="nowrap"
+					spacing={1}
+				>
 					{icon && (
 						<Grid item>
 							<CardMedia image={icon} className="game-icon" />
 						</Grid>
 					)}
-					<Grid item>
-						<Grid container direction="column" alignItems="center">
+					<Grid item style={{ flexGrow: 1 }}>
+						<Grid container direction="column" alignItems="center" grow={1}>
 							<Grid item>
 								<Grid container direction="row" alignItems="center" spacing={1}>
 									<Grid item>{statusIcon}</Grid>
@@ -205,7 +217,7 @@ export default function ServerCard({
 										{statusMessage}
 										{status === "running" &&
 											numPlayers !== -1 &&
-											` with ${
+											`${smallScreen ? "" : " with"} ${
 												numPlayers !== undefined ? numPlayers : "?"
 											} players`}
 										{players.length > 0 && (
@@ -231,11 +243,32 @@ export default function ServerCard({
 							</Grid>
 							{connectUrl && status === "running" && (
 								<Grid item>
-									<Button href={connectUrl}>
-										<PowerIcon style={{ color: "green" }} /> Connect
-									</Button>
+									<Tooltip title={connectUrl}>
+										<Button href={connectUrl}>
+											<PowerIcon style={{ color: "green" }} /> Connect
+										</Button>
+									</Tooltip>
 								</Grid>
 							)}
+							<Grid item>
+								<Grid container direction="row" spacing={1}>
+									{links.length > 0 &&
+										links.map(({ link, title }, i) => (
+											<Grid item xs={6} key={`link-${id}-${i}`}>
+												<Button
+													size="small"
+													href={link}
+													variant="outlined"
+													style={{
+														whiteSpace: "nowrap",
+													}}
+												>
+													{title}
+												</Button>
+											</Grid>
+										))}
+								</Grid>
+							</Grid>
 						</Grid>
 					</Grid>
 				</Grid>

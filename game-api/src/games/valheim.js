@@ -28,4 +28,15 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	async filesToBackup() {
 		return ["saves"];
 	}
+	getLinks() {
+		if (gameId === "valheim") {
+			return [
+				{
+					link: "https://gman.nebtown.info/files/valheim-mistlands-mods-2022-12-10.7z",
+					title: "Mod Pack",
+				},
+			];
+		}
+		return [];
+	}
 };
