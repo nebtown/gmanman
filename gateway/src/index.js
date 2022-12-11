@@ -109,156 +109,55 @@ app.all("/:gameId/*", async (request, response) => {
 	const queryParams = request.query || {};
 	const bodyParams = request.body || {};
 	let requestURL = `${gameApi.url}${endpoint}`;
-	const authScheme = gameApi.authScheme;
-	const authSecret = gameApi.authSecret;
-	if (authScheme) {
-		switch (authScheme)
-		{
-			case "totp":
-				if (authSecret) {
-					let totp = otplib.totp.generate(authSecret);
-					if (request.method === "GET") {
-						queryParams.totp = totp;
-						bodyParams.totp = totp;
-					}
-				}
-				break;
-			case "digest":
-				//Reference: https://en.wikipedia.org/wiki/Digest_access_authentication
-				if (authSecret) {
-					request.digestData = {
-						HA2: md5(`${request.method}:${requestURL}`),
-					}
-				}
-				break;
-		}
-	}
-	for (let i = 0; i <= MAX_AUTH_ATTEMPTS; i++)  {
-		if (i === MAX_AUTH_ATTEMPTS) {
-			debugLog(
-				"Game API",
-				gameApi.id,
-				request.method,
-				gameApi.url,
-				"Maximum authentication attempts reached."
-			);
-			response.status(502).json({ message: "Failed to authenticate with game API." });
-			break;
-		}
-		try {
-			const queryParamString = Object.keys(queryParams).length
-				? "?" + querystring.stringify(queryParams)
-				: "";
-			const { data } = await axios({
-				method: request.method,
-				url: `${requestURL}${queryParamString}`,
-				data: bodyParams,
-				headers,
-				timeout: 5000,
-			});
-			response.json(data);
-			gameApi.timeoutStartTime = 0;
-			break;
-		} catch (err) {
-			let retryQuery = false;
-			if (err.code === "ECONNREFUSED") {
-				debugLog("Game API", gameApi.url, err.message);
-				response.status(504).json({ message: "Game API offline" });
-				if (!gameApi.timeoutStartTime) {
-					gameApi.timeoutStartTime = Date.now();
-				} else if (Date.now() - gameApi.timeoutStartTime > 1000 * 60) {
-					delete knownGameApis[gameId];
-				}
-			} else if (err.response && err.response.status) {
-				const { status, statusText } = err.response;
-				const responseHeaders = err.response.headers;
-				const responseData = err.response.data;
-				switch(status) {
-					case 401:
-						const authenticate = responseHeaders["WWW-Authenticate"];
-						debugLog(
-							"GameAPI",
-							gameApi.id,
-							request.method,
-							gameApi.url,
-							"Received unauthorized header:",
-							authenticate
-						);
-						const authenticateMap = {}
-						authenticate.split(", ").forEach((kvs) => {
-							let { key, value } = kvs.split("=");
-							if (key.left(7) === "Digest ") {
-								key = key.substring(7);
-							}
-							if (value[0] === '"' && value[value.length - 1] == '"') {
-								value = value.substring(1, value.length - 2);
-							}
-							authenticateMap[key] = value;
-						});
-						switch(authScheme) {
-							case "digest":
-								const { qop, realm, nonce } = authenticateMap;
-								if (qop === "auth" && nonce) {
-									const HA1 = md5(`gmanman:${realm}:${authSecret}`);
-									const { HA2 } = request.digestData;
-									authenticateMap.response = md5(`${HA1}:${nonce}:${HA2}`);
-									headers["Authorization"] = `Digest ${authenticateMap.keys().map((key) => `${key}=${authenticateMap[key]}`).join(", ")}`
-									debugLog(
-										"GameAPI",
-										gameApi.id,
-										request.method,
-										gameApi.url,
-										`HA1: gmanman:${realm}:${authSecret} => ${HA1}`,
-										`nonce: ${nonce}`
-										`HA2: ${request.method}:${requestURL} => ${HA2}`,
-										headers["Authorization"]
-									);
-									retryQuery = true;
-								}
-								else {
-									debugLog(
-										"Game API",
-										gameApi.id,
-										request.method,
-										gameApi.url,
-										"API registered with digest authentication, but server did not return correct authenticate header.",
-										`Status: ${status} ${statusText}`,
-										responseHeaders
-									);
-									response.status(502).json({ message: "Game API had invalid authenticate header.", responseHeaders })
-								}
-								break;
-							default:
-								debugLog(
-									"Game API",
-									gameApi.id,
-									request.method,
-									gameApi.url,
-									"API returned unauthorized status, but no authentication scheme that supports re-transmission was registered.",
-									`Scheme: ${authScheme}`
-								);
-								response.status(502).json({ message: "Game API misconfigured authentication scheme.", scheme: authScheme });
-								break;
-						}
-						break;
-					default:
-						debugLog(
-							"Game API",
-							gameApi.url,
-							err.message,
-							`Status: ${status} ${statusText}`,
-							responseData
-						);
-						response.status(status).json(responseData);
-				}
-			} else {
-				console.warn("Game API", err);
-				response.status(500).json({});
+	try {
+		const queryParamString = Object.keys(queryParams).length
+			? "?" + querystring.stringify(queryParams)
+			: "";
+		const { data } = await axios({
+			method: request.method,
+			url: `${requestURL}${queryParamString}`,
+			data: bodyParams,
+			headers,
+			timeout: 5000,
+		});
+		response.json(data);
+		gameApi.timeoutStartTime = 0;
+	} catch (err) {
+		if (err.code === "ECONNREFUSED") {
+			debugLog("Game API", gameApi.url, err.message);
+			response.status(504).json({ message: "Game API offline" });
+			if (!gameApi.timeoutStartTime) {
+				gameApi.timeoutStartTime = Date.now();
+			} else if (Date.now() - gameApi.timeoutStartTime > 1000 * 60) {
+				delete knownGameApis[gameId];
 			}
-			if (retryQuery) {
-				continue;
+		} else if (err.response && err.response.status) {
+			const { status, statusText } = err.response;
+			const responseHeaders = err.response.headers;
+			const responseData = err.response.data;
+			switch (status) {
+				case 502:
+					debugLog("Game API 502", gameApi.url, err.message);
+					response.status(504).json({ message: "Game API offline" });
+					if (!gameApi.timeoutStartTime) {
+						gameApi.timeoutStartTime = Date.now();
+					} else if (Date.now() - gameApi.timeoutStartTime > 1000 * 60) {
+						delete knownGameApis[gameId];
+					}
+					break;
+				default:
+					debugLog(
+						"Game API",
+						gameApi.url,
+						err.message,
+						`Status: ${status} ${statusText}`,
+						responseData
+					);
+					response.status(status).json(responseData);
 			}
-			break;
+		} else {
+			console.warn("Game API", err);
+			response.status(500).json({});
 		}
 	}
 });

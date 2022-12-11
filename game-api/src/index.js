@@ -6,8 +6,6 @@ const gcs = require("./libjunkdrawer/gcs");
 const archives = require("./libjunkdrawer/archives");
 const axios = require("axios");
 const path = require("path");
-const otplib = require("otplib");
-const crypto = require("crypto");
 const app = express();
 
 const {
@@ -36,21 +34,6 @@ app.use(pretty({ query: "pretty" }));
 app.use(cors()); // enable CORS on all routes
 app.use((request, response, next) => {
 	console.log(`- ${request.method} ${request.originalUrl}`);
-	next();
-});
-
-const totp = otplib.totp.create({ ...otplib.totp.allOptions(), window: 2 });
-const totpSecret = crypto.randomBytes(64).toString("hex");
-app.use((request, response, next) => {
-	if (
-		request.method !== "GET" &&
-		!totp.check(request.body.totp || request.query.totp, totpSecret)
-	) {
-		console.warn("Blocking request - invalid totp!", request.body);
-		return response
-			.status(403)
-			.json({ error: "auth error: invalid totp token" });
-	}
 	next();
 });
 
@@ -280,7 +263,6 @@ async function registerWithGateway() {
 				gameManager.filesToBackup && "backup",
 				gameManager.rcon && "rcon",
 			].filter(Boolean),
-			totpSecret,
 		});
 	} catch (err) {
 		console.error("Failed to register with Gateway", err.message);
