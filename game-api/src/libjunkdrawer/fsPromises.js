@@ -1,5 +1,6 @@
 const fs = require("fs");
 const util = require("util");
+const child_process = require("child_process");
 
 module.exports = {
 	readFile: util.promisify(fs.readFile),
@@ -18,3 +19,22 @@ module.exports.exists = async (fileName) => {
 		return false;
 	}
 };
+
+module.exports.spawnProcess = (cmd, args) =>
+	new Promise((resolve, reject) => {
+		const cp = child_process.spawn(cmd, args);
+		const error = [];
+		const stdout = [];
+		cp.stdout.on("data", (data) => {
+			stdout.push(data.toString());
+		});
+
+		cp.on("error", (e) => {
+			error.push(e.toString());
+		});
+
+		cp.on("close", () => {
+			if (error.length) reject(error.join(""));
+			else resolve(stdout.join(""));
+		});
+	});

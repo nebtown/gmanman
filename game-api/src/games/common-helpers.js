@@ -8,11 +8,17 @@ const srcdsRcon = require("srcds-rcon");
 const axios = require("axios");
 const Gamedig = require("gamedig");
 const docker = new (require("dockerode"))();
+const { readFile, writeFile } = require("../libjunkdrawer/fsPromises");
+const {
+	generateBackupFilename,
+	makeBackup,
+} = require("../libjunkdrawer/archives");
 
 const {
 	game,
 	gameId,
 	gameDir,
+	connectUrl,
 	debugLog,
 	rconPort,
 	argv,
@@ -229,6 +235,58 @@ async function steamWorkshopGetModSearch(appid, query) {
 	return [];
 }
 
+class BaseGameManager {
+	constructor() {
+		if (!this.prepareModPackTempDir) {
+			this.getModPack = false;
+		}
+	}
+	getConnectUrl() {
+		return `steam://connect/${connectUrl}`;
+	}
+
+	/**
+	 * Gets a cached .7z containing mods, or generates a new one if the files have changed.
+	 * This method requires GameManagers to implement getModPackHash() and prepareModPackTempDir.
+	 * @returns filePath.7z
+	 */
+	async getModPack() {
+		const currentHash = await this.getModPackHash();
+		const storedHashFilePath = path.join(gameDir, "modPackData.json");
+
+		let lastModPackData = {};
+		try {
+			lastModPackData = JSON.parse(await readFile(storedHashFilePath));
+		} catch (err) {}
+		if (currentHash === lastModPackData.hash) {
+			return lastModPackData.filePath;
+		}
+
+		const modPackFilePath = await this.#buildModPack();
+		void writeFile(
+			storedHashFilePath,
+			JSON.stringify({ hash: currentHash, filePath: modPackFilePath })
+		);
+
+		return modPackFilePath;
+	}
+
+	/**
+	 * Creates a new .7z containing mods, to be distributed to clients.
+	 * @returns filePath.7z
+	 */
+	async #buildModPack() {
+		const modPackFilePath = generateBackupFilename(`${gameId}-mods`, gameDir);
+		const modPackFilename = path.basename(modPackFilePath);
+		const packTempPath = `/tmp/modpacks/${modPackFilename}`;
+
+		const archiveRootPath = await this.prepareModPackTempDir(packTempPath);
+		await makeBackup(modPackFilePath, gameDir, [archiveRootPath]);
+
+		return modPackFilePath;
+	}
+}
+
 module.exports = {
 	dockerComposeStart,
 	dockerComposeStop,
@@ -243,4 +301,5 @@ module.exports = {
 	readEnvFileCsv,
 	writeEnvFileCsv,
 	steamWorkshopGetModSearch,
+	BaseGameManager,
 };

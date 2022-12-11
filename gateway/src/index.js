@@ -109,18 +109,37 @@ app.all("/:gameId/*", async (request, response) => {
 	const queryParams = request.query || {};
 	const bodyParams = request.body || {};
 	let requestURL = `${gameApi.url}${endpoint}`;
+	const extraAxiosOptions = {};
+	if (endpoint.startsWith("mods/pack")) {
+		extraAxiosOptions.responseType = "stream";
+		extraAxiosOptions.decompress = false;
+		extraAxiosOptions.timeout = 25000;
+	}
 	try {
 		const queryParamString = Object.keys(queryParams).length
 			? "?" + querystring.stringify(queryParams)
 			: "";
-		const { data } = await axios({
+		const { data, headers: responseHeaders } = await axios({
 			method: request.method,
 			url: `${requestURL}${queryParamString}`,
 			data: bodyParams,
 			headers,
 			timeout: 5000,
+			...extraAxiosOptions,
 		});
-		response.json(data);
+
+		if (extraAxiosOptions.responseType === "stream") {
+			for (const headerName of [
+				"content-disposition",
+				"content-type",
+				"content-length",
+			]) {
+				response.setHeader(headerName, responseHeaders[headerName]);
+			}
+			data.pipe(response); // for file transfers, like modPacks
+		} else {
+			response.json(data);
+		}
 		gameApi.timeoutStartTime = 0;
 	} catch (err) {
 		if (err.code === "ECONNREFUSED") {
@@ -134,7 +153,7 @@ app.all("/:gameId/*", async (request, response) => {
 		} else if (err.response && err.response.status) {
 			const { status, statusText } = err.response;
 			const responseHeaders = err.response.headers;
-			const responseData = err.response.data;
+			let responseData = err.response.data;
 			switch (status) {
 				case 502:
 					debugLog("Game API 502", gameApi.url, err.message);
@@ -146,6 +165,9 @@ app.all("/:gameId/*", async (request, response) => {
 					}
 					break;
 				default:
+					if (extraAxiosOptions.responseType === "stream") {
+						responseData = await streamToString(responseData);
+					}
 					debugLog(
 						"Game API",
 						gameApi.url,
@@ -161,6 +183,15 @@ app.all("/:gameId/*", async (request, response) => {
 		}
 	}
 });
+
+function streamToString(stream) {
+	const chunks = [];
+	return new Promise((resolve, reject) => {
+		stream.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+		stream.on("error", (err) => reject(err));
+		stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+	});
+}
 
 const httpServer = http.createServer(app);
 httpServer.listen(listenPort);

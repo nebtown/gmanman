@@ -8,12 +8,17 @@
   - Ark
   - Factorio
   - Garry's Mod
-- Start server button
+  - Barotrauma
+  - Project Zomboid
+  - Kerbal Space Program
+  - Valheim
+- Start server button (launches a Docker container)
   - stop server, disabled if numPlayers > 0, unless admin override
 - Show status + player count
 - Show logs
 - Add/Disable Mods
   - with search
+- Modpack Generation (a 7z you can hand to clients)
 - create/load saves/backups
 - Google Auth
 

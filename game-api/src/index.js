@@ -231,6 +231,19 @@ app.get("/mods/search", async (request, response) => {
 		}
 	}
 });
+app.get("/mods/pack", async (request, response) => {
+	if (!gameManager.getModPack) {
+		response.status(501).json({ error: "Not Implemented" });
+	}
+
+	try {
+		const modPackFilePath = await gameManager.getModPack();
+		response.download(modPackFilePath);
+	} catch (err) {
+		console.error("/mods/pack Error", err);
+		response.status(500).json({ error: "Failed to build mod pack" });
+	}
+});
 
 app.post("/rcon", async (request, response) => {
 	if (!gameManager.rcon) {
@@ -259,6 +272,7 @@ async function registerWithGateway() {
 				gameManager.getMods && "mods",
 				gameManager.getModList && "modList",
 				gameManager.getModSearch && "modSearch",
+				gameManager.getModPack && "modPack",
 				gameManager.update && "update",
 				gameManager.filesToBackup && "backup",
 				gameManager.rcon && "rcon",

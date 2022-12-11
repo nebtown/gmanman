@@ -69,4 +69,14 @@ module.exports = class TestManager {
 	filesToBackup() {
 		return ["file1.txt", "dir1"];
 	}
+
+	getLinks() {
+		return [
+			{
+				link: "https://store.steampowered.com/app/4000/Garrys_Mod/",
+				title: "Store",
+			},
+		];
+		return [];
+	}
 };

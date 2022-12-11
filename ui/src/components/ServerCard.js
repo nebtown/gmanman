@@ -252,6 +252,20 @@ export default function ServerCard({
 							)}
 							<Grid item>
 								<Grid container direction="row" spacing={1}>
+									{features.includes("modPack") && (
+										<Grid item xs={6}>
+											<Button
+												size="small"
+												href={`${baseUrl}mods/pack`}
+												variant="outlined"
+												style={{
+													whiteSpace: "nowrap",
+												}}
+											>
+												Mod Pack
+											</Button>
+										</Grid>
+									)}
 									{links.length > 0 &&
 										links.map(({ link, title }, i) => (
 											<Grid item xs={6} key={`link-${id}-${i}`}>

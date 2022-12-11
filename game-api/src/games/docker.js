@@ -10,15 +10,14 @@ const {
 	dockerLogRead,
 	gamedigQueryPlayers,
 	rconSRCDSConnect,
+	BaseGameManager,
 } = require("./common-helpers");
 
-module.exports = class GenericDockerManager {
+module.exports = class GenericDockerManager extends BaseGameManager {
 	constructor({ getCurrentStatus, setStatus }) {
+		super();
 		this.getCurrentStatus = getCurrentStatus;
 		this.setStatus = setStatus;
-	}
-	getConnectUrl() {
-		return `steam://connect/${connectUrl}`;
 	}
 	start() {
 		return dockerComposeStart();
