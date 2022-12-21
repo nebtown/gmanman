@@ -140,24 +140,21 @@ async function readEnvFileCsv(envName) {
 	const env = dotenv.parse(
 		await fsPromises.readFile(path.join(gameDir, ".env"))
 	);
-	return (env[envName] || "")
-		.trim()
-		.split(",")
-		.map((id) => ({ id, enabled: true }));
+	if (!env[envName]) {
+		return [];
+	}
+	return env[envName].trim().split(",");
 }
 
-async function writeEnvFileCsv(envName, modsList) {
+async function writeEnvFileCsv(envName, newEnvValue) {
 	const envFilePath = path.join(gameDir, ".env");
-	const modsString = modsList
-		.filter(({ enabled }) => enabled)
-		.map(({ id }) => id)
-		.join(",");
 	const envFileContents = (await fsPromises.readFile(envFilePath)) || "";
 	const newEnvFile =
 		envFileContents
 			.toString()
+			.replace(new RegExp(`^${envName}=".*"\n?`, "ms"), "")
 			.replace(new RegExp(`^${envName}=.*$\n?`, "m"), "")
-			.trim() + `\n${envName}=${modsString}`;
+			.trim() + `\n${envName}="${newEnvValue}"\n`;
 	await fsPromises.writeFile(envFilePath, newEnvFile);
 }
 

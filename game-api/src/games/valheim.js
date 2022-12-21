@@ -1,5 +1,6 @@
 const Gamedig = require("gamedig");
 const path = require("path");
+const axios = require("axios");
 
 const {
 	game,
@@ -9,11 +10,19 @@ const {
 	rconPort,
 	gameDir,
 } = require("../cliArgs");
-const { dockerComposePull, gamedigQueryPlayers } = require("./common-helpers");
+const {
+	dockerComposePull,
+	gamedigQueryPlayers,
+	readEnvFileCsv,
+	writeEnvFileCsv,
+} = require("./common-helpers");
 const GenericDockerManager = require("./docker");
 const { spawnProcess } = require("../libjunkdrawer/fsPromises");
 const fse = require("fs-extra");
 
+const reDownloadUrl1 = /package\/download\/([^\/]+)\/([^\/]+)\/([^\/]+)\//;
+const reDownloadUrl2 =
+	/repository\/packages\/([^\/\-]+)\-([^\/\-]+)\-([^\-]+)\.zip/;
 module.exports = class ValheimManager extends GenericDockerManager {
 	updateOnStart = true;
 	getConnectUrl() {
@@ -36,6 +45,80 @@ module.exports = class ValheimManager extends GenericDockerManager {
 				console.log("docker pull failed:", e);
 			});
 	}*/
+
+	async getMods() {
+		const allModsById = await this.getModListById();
+		const enabledModsRaw = await readEnvFileCsv("MODS");
+		const disabledModsRaw = await readEnvFileCsv("MODS_OFF");
+
+		return [
+			...enabledModsRaw,
+			...disabledModsRaw.filter((url) => !enabledModsRaw.includes(url)),
+		].map((url) => {
+			const match = reDownloadUrl1.exec(url) || reDownloadUrl2.exec(url) || [];
+			const id = `${match[1]}-${match[2]}`;
+			const version = match[3];
+
+			return {
+				id,
+				enabled: enabledModsRaw.includes(url),
+				href: `${allModsById[id]?.href}#currentVersion=${version}`,
+				version,
+				outdated: version !== (allModsById[id]?.latestVersion || version),
+			};
+		});
+	}
+	async setMods(modsList) {
+		const allModsById = await this.getModListById();
+		const modsString = modsList
+			.filter(({ enabled }) => enabled)
+			.map(({ id }) => allModsById[id].downloadUrl)
+			.join(",\n");
+		await writeEnvFileCsv("MODS", modsString);
+
+		const modsStringDisabled = modsList
+			.filter(({ enabled }) => !enabled)
+			.map(({ id }) => allModsById[id].downloadUrl)
+			.join(",\n");
+		await writeEnvFileCsv("MODS_OFF", modsStringDisabled);
+		return true;
+	}
+
+	async getModList() {
+		if (!this.cachedModList || this.cachedModListExpiry < Date.now()) {
+			const { data } = await axios.get(
+				`https://thunderstore.io/c/${game}/api/v1/package/`
+			);
+			this.cachedModList = data
+				.map(({ name, full_name, package_url, versions }) => ({
+					id: full_name,
+					label: name,
+					href: package_url,
+					downloadUrl: versions[0].download_url,
+					latestVersion: versions[0].version_number,
+					downloads: versions
+						.slice(0, 5)
+						.reduce((sum, row) => sum + row.downloads, 0),
+				}))
+				.sort((a, b) => b.downloads - a.downloads);
+			this.cachedModListExpiry = Date.now() + 60 * 60 * 1000;
+		}
+		return this.cachedModList;
+	}
+	async getModListById() {
+		return (await this.getModList()).reduce((carry, row) => {
+			carry[row.id] = row;
+			return carry;
+		}, {});
+	}
+
+	async getModSearch(query) {
+		query = query.toLowerCase();
+		return (await this.getModList()).filter(({ id, label }) =>
+			`${id} ${label}`.toLowerCase().includes(query)
+		);
+	}
+
 	async filesToBackup() {
 		return ["saves"];
 	}

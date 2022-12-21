@@ -71,10 +71,17 @@ module.exports = class ArkManager {
 		};
 	}
 	async getMods() {
-		return await readEnvFileCsv("ARK_MODS");
+		return (await readEnvFileCsv("ARK_MODS")).map((id) => ({
+			id,
+			enabled: true,
+		}));
 	}
 	async setMods(modsList) {
-		await writeEnvFileCsv("ARK_MODS", modsList);
+		const modsString = modsList
+			.filter(({ enabled }) => enabled)
+			.map(({ id }) => id)
+			.join(",");
+		await writeEnvFileCsv("ARK_MODS", modsString);
 		return true;
 	}
 	async getModSearch(query) {

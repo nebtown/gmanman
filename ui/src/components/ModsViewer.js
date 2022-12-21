@@ -75,7 +75,7 @@ export default function ModsViewer({
 					"Loading..."
 				) : (
 					<List dense={true} disablePadding>
-						{modsList.map(({ id, label, href, enabled }) => (
+						{modsList.map(({ id, label, href, enabled, outdated }) => (
 							<ListItem
 								key={id}
 								style={label && id ? { paddingTop: 0, paddingBottom: 0 } : {}}
@@ -84,18 +84,21 @@ export default function ModsViewer({
 									id={`${id}-label`}
 									primary={label}
 									secondary={
-										href ? (
-											<a
-												href={href}
-												target="_blank"
-												rel="noopener noreferrer"
-												style={{ fontSize: "smaller" }}
-											>
-												{id}
-											</a>
-										) : (
-											id
-										)
+										<>
+											{href ? (
+												<a
+													href={href}
+													target="_blank"
+													rel="noopener noreferrer"
+													style={{ fontSize: "smaller" }}
+												>
+													{id}
+												</a>
+											) : (
+												id
+											)}
+											{!!outdated && " Old"}
+										</>
 									}
 								/>
 								<ListItemSecondaryAction>
