@@ -44,7 +44,21 @@ module.exports = class FactorioManager {
 			console.warn("unexpected playerList:", playerList);
 			return false;
 		}
-		return [...new Array(Number(matches[1]))].map((_) => ({}));
+		const playerCount = Number(matches[1]);
+		if (playerCount > 0) {
+			return playerList
+				.split("\n")
+				.slice(1)
+				.map((line) => {
+					const lineMatch = line.match(/  (.*) \(online\)/);
+					if (lineMatch) {
+						return { name: lineMatch[1] };
+					}
+					return false;
+				})
+				.filter(Boolean);
+		}
+		return [...new Array(playerCount)].map((_) => ({}));
 	}
 	async logs(requestedOffset) {
 		const { logs, offset } = await dockerLogRead(requestedOffset);

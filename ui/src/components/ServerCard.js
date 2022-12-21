@@ -189,6 +189,8 @@ export default function ServerCard({
 			? "Updating"
 			: "Status Unknown";
 
+	const playerNamesString = players.map(({ name }) => name).join(", ");
+
 	return (
 		<Card
 			raised={["starting", "running", "stopping", "updating"].includes(status)}
@@ -220,10 +222,8 @@ export default function ServerCard({
 											`${smallScreen ? "" : " with"} ${
 												numPlayers !== undefined ? numPlayers : "?"
 											} players`}
-										{players.length > 0 && (
-											<Tooltip
-												title={players.map(({ name }) => name).join(", ")}
-											>
+										{playerNamesString.length > 0 && (
+											<Tooltip title={playerNamesString}>
 												<div
 													style={{
 														textAlign: "right",
@@ -234,7 +234,7 @@ export default function ServerCard({
 														fontSize: "0.8rem",
 													}}
 												>
-													{players.map(({ name }) => name).join(", ")}
+													{playerNamesString}
 												</div>
 											</Tooltip>
 										)}
