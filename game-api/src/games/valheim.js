@@ -15,12 +15,13 @@ const { spawnProcess } = require("../libjunkdrawer/fsPromises");
 const fse = require("fs-extra");
 
 module.exports = class ValheimManager extends GenericDockerManager {
+	updateOnStart = true;
 	getConnectUrl() {
 		return connectUrl;
 	}
 	async getPlayers() {
 		return await gamedigQueryPlayers({
-			type: "valheim", // Gamedig lacks Valheim but css is compatible
+			type: "valheim",
 			socketTimeout: 4000,
 		});
 	}

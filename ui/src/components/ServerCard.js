@@ -298,6 +298,9 @@ export default function ServerCard({
 							setStatus(newStatus);
 						}}
 					>
+						{features.includes("updateOnStart") && (
+							<div className="button-supertext">Update +</div>
+						)}
 						<StartIcon /> Start
 					</Button>
 				)}

@@ -274,6 +274,7 @@ async function registerWithGateway() {
 				gameManager.getModSearch && "modSearch",
 				gameManager.getModPack && "modPack",
 				gameManager.update && "update",
+				gameManager.updateOnStart && "updateOnStart",
 				gameManager.filesToBackup && "backup",
 				gameManager.rcon && "rcon",
 			].filter(Boolean),
