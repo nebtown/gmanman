@@ -227,6 +227,7 @@ export default function ModsSearch({
 							}
 							fullWidth
 							InputProps={{
+								...params.InputProps,
 								endAdornment: (
 									<>
 										{loading ? (
