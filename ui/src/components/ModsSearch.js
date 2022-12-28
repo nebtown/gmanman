@@ -6,12 +6,12 @@ import AwesomeDebouncePromise from "awesome-debounce-promise";
 import useConstant from "use-constant";
 import { useSnackbar } from "notistack";
 
-import { makeStyles } from "@material-ui/core/styles";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import AddIcon from "@material-ui/core/SvgIcon/SvgIcon";
+import makeStyles from "@mui/styles/makeStyles";
+import Autocomplete from "@mui/material/Autocomplete";
+import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import AddIcon from "@mui/material/SvgIcon/SvgIcon";
 
 function renderRow(props) {
 	const { data, index, style } = props;
@@ -187,25 +187,27 @@ export default function ModsSearch({
 						setModIdInput(option ? option.id : "");
 					}}
 					getOptionLabel={(option) => option.label || option.id}
-					renderOption={(option) => {
+					renderOption={(props, option) => {
 						if (option.label) {
 							return (
-								<div style={{ padding: "6px 16px" }}>
-									<div>{option.label}</div>
-									<div style={{ fontSize: "x-small" }}>
-										{option.href ? (
-											<a
-												href={option.href}
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												{option.id}
-											</a>
-										) : (
-											option.id
-										)}
+								<li {...props}>
+									<div style={{ padding: "6px 16px" }}>
+										<div>{option.label}</div>
+										<div style={{ fontSize: "x-small" }}>
+											{option.href ? (
+												<a
+													href={option.href}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													{option.id}
+												</a>
+											) : (
+												option.id
+											)}
+										</div>
 									</div>
-								</div>
+								</li>
 							);
 						}
 						return option.id;
@@ -256,6 +258,7 @@ export default function ModsSearch({
 			)}
 
 			<Button
+				color="inherit"
 				onClick={() => {
 					let modId = (modIdInput || "").trim();
 					let modOption;

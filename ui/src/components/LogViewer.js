@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import { TextField } from "@material-ui/core";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { TextField } from "@mui/material";
 import { useAuthedAxios } from "../util/useAuthedAxios";
 import { useLocalStorage } from "@rehooks/local-storage";
 import { useInterval } from "../util/hooks";
@@ -57,13 +57,15 @@ export default function LogViewer({
 			onClose={() => {
 				setOpen(false);
 			}}
-			onEnter={() => {
-				dialogContentRef.current.scrollIntoView({ block: "end" });
-			}}
 			scroll="paper"
 			maxWidth="md"
 			aria-labelledby="scroll-dialog-title"
 			className="LogViewer"
+			TransitionProps={{
+				onEnter: () => {
+					dialogContentRef.current.scrollIntoView({ block: "end" });
+				},
+			}}
 		>
 			<DialogTitle id="scroll-dialog-title">{title} Logs</DialogTitle>
 			<DialogContent
@@ -142,6 +144,7 @@ export default function LogViewer({
 					</form>
 				)}
 				<Button
+					color="inherit"
 					onClick={() => {
 						setOpen(false);
 					}}

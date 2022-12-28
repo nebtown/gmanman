@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
 
-import CloudDownloadIcon from "@material-ui/icons/CloudDownload";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import CloseIcon from "@material-ui/icons/Close";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CloseIcon from "@mui/icons-material/Close";
 
 import { useAuthedAxios } from "../util/useAuthedAxios";
 
@@ -76,6 +76,7 @@ export default function BackupsViewer({
 									{name.replace(gameId + "-", "")}
 								</span>
 								<Button
+									color="inherit"
 									onClick={async () => {
 										await authedAxios.post(`${baseUrl}restore/`, {
 											file: name,
@@ -96,6 +97,7 @@ export default function BackupsViewer({
 			</DialogContent>
 			<DialogActions>
 				<Button
+					color="inherit"
 					onClick={() => {
 						setOpen(false);
 					}}

@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 import classNames from "classnames";
 
-import { Helmet } from "react-helmet";
 import queryString from "query-string";
 import { List, AutoSizer } from "react-virtualized";
 import "react-virtualized/styles.css"; // only needs to be imported once
 
-import { makeStyles } from "@material-ui/core/styles";
-import Slider from "@material-ui/core/Slider";
+import makeStyles from "@mui/styles/makeStyles";
+import Slider from "@mui/material/Slider";
 
 const useStyles = makeStyles({
 	root: {
@@ -16,9 +15,13 @@ const useStyles = makeStyles({
 	},
 });
 
+export function Head() {
+	return <title>SSGrid</title>;
+}
+
 // https://codesandbox.io/s/7y66p25qv6 looks neat for a grid-er view, unsure how to "scroll to image" then though
 
-export default ({ name }) => {
+const SSGalleryPage = ({ name }) => {
 	const isSSR = typeof window === "undefined";
 	const [list, setList] = useState([]);
 	const [imageHeight, setImageHeight] = useState(150);
@@ -80,9 +83,6 @@ export default ({ name }) => {
 		<div
 			style={{ width: "calc(100vw - 1rem)", height: "calc(100vh - 3.5rem)" }}
 		>
-			<Helmet>
-				<title>SSGrid</title>
-			</Helmet>
 			Lookin at {name}'s Screenshots
 			<Slider
 				defaultValue={imageHeight}
@@ -135,3 +135,5 @@ export default ({ name }) => {
 	);
 	return renderedContainer;
 };
+
+export default SSGalleryPage;

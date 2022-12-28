@@ -3,29 +3,29 @@ import PropTypes from "prop-types";
 import axios from "axios";
 import { useLocalStorage } from "@rehooks/local-storage";
 
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import CardHeader from "@material-ui/core/CardHeader";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Card from "@mui/material/Card";
+import CardActions from "@mui/material/CardActions";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
 
-import Button from "@material-ui/core/Button";
-import CardMedia from "@material-ui/core/CardMedia";
-import Grid from "@material-ui/core/Grid";
-import Tooltip from "@material-ui/core/Tooltip";
+import Button from "@mui/material/Button";
+import CardMedia from "@mui/material/CardMedia";
+import Grid from "@mui/material/Grid";
+import Tooltip from "@mui/material/Tooltip";
 
-import StartIcon from "@material-ui/icons/PlayArrow";
-import StopIcon from "@material-ui/icons/Stop";
-import DeviceUnknownIcon from "@material-ui/icons/DeviceUnknown";
-import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
-import CloudOffIcon from "@material-ui/icons/CloudOff";
-import ExtensionIcon from "@material-ui/icons/Extension";
-import FlightLandIcon from "@material-ui/icons/FlightLand";
-import FlightTakeoffIcon from "@material-ui/icons/FlightTakeoff";
-import PowerIcon from "@material-ui/icons/Power";
-import SubjectIcon from "@material-ui/icons/Subject";
-import UpdateIcon from "@material-ui/icons/SystemUpdateAlt";
-import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import StartIcon from "@mui/icons-material/PlayArrow";
+import StopIcon from "@mui/icons-material/Stop";
+import DeviceUnknownIcon from "@mui/icons-material/DeviceUnknown";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import CloudOffIcon from "@mui/icons-material/CloudOff";
+import ExtensionIcon from "@mui/icons-material/Extension";
+import FlightLandIcon from "@mui/icons-material/FlightLand";
+import FlightTakeoffIcon from "@mui/icons-material/FlightTakeoff";
+import PowerIcon from "@mui/icons-material/Power";
+import SubjectIcon from "@mui/icons-material/Subject";
+import UpdateIcon from "@mui/icons-material/SystemUpdateAlt";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 import { useInterval, useMountEffect } from "../util/hooks";
 import { useAuthedAxios } from "../util/useAuthedAxios";
@@ -244,7 +244,7 @@ export default function ServerCard({
 							{connectUrl && status === "running" && (
 								<Grid item>
 									<Tooltip title={connectUrl}>
-										<Button href={connectUrl}>
+										<Button href={connectUrl} color="inherit">
 											<PowerIcon style={{ color: "green" }} /> Connect
 										</Button>
 									</Tooltip>
@@ -256,6 +256,7 @@ export default function ServerCard({
 										<Grid item xs={6}>
 											<Button
 												size="small"
+												color="inherit"
 												href={`${baseUrl}mods/pack`}
 												variant="outlined"
 												style={{
@@ -270,6 +271,7 @@ export default function ServerCard({
 										links.map(({ link, title }, i) => (
 											<Grid item xs={6} key={`link-${id}-${i}`}>
 												<Button
+													color="inherit"
 													size="small"
 													href={link}
 													variant="outlined"
@@ -306,7 +308,7 @@ export default function ServerCard({
 				)}
 				{(status === "starting" || status === "running") && (
 					<Button
-						color="secondary"
+						color="error"
 						disabled={!isAdmin && numPlayers > 0}
 						onClick={() => {
 							setStopConfirmationOpen(true);
@@ -317,6 +319,7 @@ export default function ServerCard({
 				)}
 				{supportsLogs && (
 					<Button
+						color="inherit"
 						size="small"
 						onClick={async () => {
 							await fetchLogs();
@@ -328,6 +331,7 @@ export default function ServerCard({
 				)}
 				{supportsUpdate && (
 					<Button
+						color="inherit"
 						size="small"
 						disabled={!isAdmin || status !== "stopped"}
 						onClick={async () => {
@@ -342,6 +346,7 @@ export default function ServerCard({
 				)}
 				{supportsMods && (
 					<Button
+						color="inherit"
 						size="small"
 						disabled={!isAdmin || status !== "stopped"}
 						onClick={() => {
@@ -353,6 +358,7 @@ export default function ServerCard({
 				)}
 				{supportsBackup && (
 					<Button
+						color="inherit"
 						size="small"
 						disabled={!isAdmin}
 						onClick={() => {

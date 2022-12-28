@@ -9,15 +9,6 @@ module.exports = {
 	},
 	plugins: [
 		{
-			resolve: `gatsby-plugin-material-ui`,
-			options: {
-				stylesProvider: {
-					injectFirst: true,
-				},
-				disableMinification: true,
-			},
-		},
-		{
 			resolve: `gatsby-plugin-sass`,
 			options: { implementation: require("sass") },
 		},
@@ -35,6 +26,5 @@ module.exports = {
 				path: `${__dirname}/static/`,
 			},
 		},
-		`gatsby-plugin-react-helmet`,
 	],
 };

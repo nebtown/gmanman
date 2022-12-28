@@ -2,19 +2,21 @@ import React, { useState } from "react";
 import axios from "axios";
 import classNames from "classnames";
 import { graphql, useStaticQuery } from "gatsby";
-import { Helmet } from "react-helmet";
 import { SnackbarProvider } from "notistack";
 import queryString from "query-string";
 
-import Container from "@material-ui/core/Container";
-import Grid from "@material-ui/core/Grid";
+import { ThemeProvider } from "@mui/material/styles";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import CardContent from "@mui/material/CardContent";
+import Card from "@mui/material/Card";
 
 // Force these components to only be loaded clientside, not during SSR
 const ServerCard = React.lazy(() => import("../components/ServerCard"));
 const LoginButton = React.lazy(() => import("../components/LoginButton"));
 import { useMountEffect } from "../util/hooks";
-import CardContent from "@material-ui/core/CardContent";
-import Card from "@material-ui/core/Card";
+
+import theme from "../theme";
 
 const titleOptions = [
 	"GmanMan 2: Eclectic Boogaloo",
@@ -31,7 +33,30 @@ function generatePageTitle() {
 	return titleOptions[Math.floor(Math.random() * titleOptions.length)];
 }
 
-export default () => {
+export function Head() {
+	const isSSR = typeof window === "undefined";
+	const query = queryString.parse(!isSSR && location.search);
+	const april1 =
+		query.better ||
+		(new Date().getMonth() + 1 === 4 && new Date().getDay() === 1) ||
+		pageRandom < 0.02;
+	return (
+		<>
+			<title>{generatePageTitle()}</title>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+			/>
+			<link
+				rel="stylesheet"
+				href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap"
+			/>
+			{april1 && <script src="/april1.css" />}
+		</>
+	);
+}
+
+const GmanmanPage = () => {
 	const isSSR = typeof window === "undefined";
 	const {
 		site: {
@@ -70,18 +95,6 @@ export default () => {
 
 	let renderedContainer = (
 		<Container>
-			<Helmet>
-				<title>{generatePageTitle()}</title>
-				<link
-					rel="stylesheet"
-					href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-				/>
-				<link
-					rel="stylesheet"
-					href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap"
-				/>
-				{april1 && <script src="/april1.css" />}
-			</Helmet>
 			<div
 				className={classNames({ marquee: april1 })}
 				style={{
@@ -160,6 +173,12 @@ export default () => {
 			)}
 		</Container>
 	);
-	renderedContainer = <SnackbarProvider>{renderedContainer}</SnackbarProvider>;
+	renderedContainer = (
+		<ThemeProvider theme={theme}>
+			<SnackbarProvider>{renderedContainer}</SnackbarProvider>
+		</ThemeProvider>
+	);
 	return renderedContainer;
 };
+
+export default GmanmanPage;
