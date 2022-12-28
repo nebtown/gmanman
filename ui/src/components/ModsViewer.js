@@ -26,6 +26,7 @@ ModsViewer.propTypes = {
 	supportsModSearch: PropTypes.bool,
 	open: PropTypes.bool,
 	setOpen: PropTypes.func.isRequired,
+	readOnly: PropTypes.bool,
 };
 
 export default function ModsViewer({
@@ -35,6 +36,7 @@ export default function ModsViewer({
 	supportsModSearch,
 	open,
 	setOpen,
+	readOnly,
 }) {
 	const authedAxios = useAuthedAxios();
 	const [modsList, setModsList] = useState(null);
@@ -115,6 +117,7 @@ export default function ModsViewer({
 											);
 										}}
 										checked={enabled}
+										disabled={readOnly}
 										inputProps={{ "aria-labelledby": `${id}-label` }}
 									/>
 								</ListItemSecondaryAction>
@@ -131,13 +134,15 @@ export default function ModsViewer({
 					display: "flex",
 				}}
 			>
-				<ModsSearch
-					modsUrl={modsUrl}
-					currentMods={modsList || []}
-					setCurrentMods={setModsList}
-					supportsModList={supportsModList}
-					supportsModSearch={supportsModSearch}
-				/>
+				{!readOnly && (
+					<ModsSearch
+						modsUrl={modsUrl}
+						currentMods={modsList || []}
+						setCurrentMods={setModsList}
+						supportsModList={supportsModList}
+						supportsModSearch={supportsModSearch}
+					/>
+				)}
 			</DialogContent>
 			<DialogActions>
 				<Button
@@ -154,6 +159,7 @@ export default function ModsViewer({
 						await authedAxios.put(modsUrl, { mods: modsList });
 						setOpen(false);
 					}}
+					disabled={readOnly}
 					color="primary"
 					startIcon={<SaveIcon />}
 				>

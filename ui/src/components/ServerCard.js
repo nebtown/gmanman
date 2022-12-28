@@ -348,7 +348,6 @@ export default function ServerCard({
 					<Button
 						color="inherit"
 						size="small"
-						disabled={!isAdmin || status !== "stopped"}
 						onClick={() => {
 							setModsOpen(true);
 						}}
@@ -391,6 +390,7 @@ export default function ServerCard({
 					supportsModSearch={features.includes("modSearch")}
 					open={modsOpen}
 					setOpen={setModsOpen}
+					readOnly={!isAdmin || status !== "stopped"}
 				/>
 			)}
 			{supportsBackup && (
