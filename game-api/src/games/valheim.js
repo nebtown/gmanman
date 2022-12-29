@@ -28,11 +28,21 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	getConnectUrl() {
 		return connectUrl;
 	}
+	oldGetPlayersResult = false;
 	async getPlayers() {
-		return await gamedigQueryPlayers({
+		const lookupPromise = gamedigQueryPlayers({
 			type: "valheim",
 			socketTimeout: 4000,
+		}).then((result) => {
+			this.oldGetPlayersResult = result;
+			return result;
 		});
+
+		const timeoutPromise = new Promise((resolve, reject) =>
+			setTimeout(() => resolve(this.oldGetPlayersResult), 800)
+		);
+
+		return await Promise.race([lookupPromise, timeoutPromise]);
 	}
 	update = false; // updates on boot
 	/*async update() {
@@ -120,7 +130,7 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	}
 
 	async filesToBackup() {
-		return ["saves"];
+		return ["saves", "server/BepInEx/config", ".env"];
 	}
 
 	/**
