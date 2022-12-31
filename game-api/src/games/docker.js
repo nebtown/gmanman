@@ -1,6 +1,20 @@
 const stripAnsi = require("strip-ansi");
+const fs = require("../libjunkdrawer/fsPromises");
+const fse = require("fs-extra");
+const path = require("path");
 
-const { gameId, debugLog, connectUrl, rconPort } = require("../cliArgs");
+const {
+	game,
+	gameId,
+	gameName,
+	gamePassword,
+	gameDir,
+	debugLog,
+	connectUrl,
+	gamePort,
+	rconPort,
+	saveName,
+} = require("../cliArgs");
 const {
 	dockerComposeStart,
 	dockerComposeStop,
@@ -10,6 +24,7 @@ const {
 	dockerLogRead,
 	gamedigQueryPlayers,
 	rconSRCDSConnect,
+	writeEnvFile,
 	BaseGameManager,
 } = require("./common-helpers");
 
@@ -75,5 +90,28 @@ module.exports = class GenericDockerManager extends BaseGameManager {
 						console.error("update error: ", e);
 					});
 			});
+	}
+
+	async setupInstanceFiles() {
+		if (!(await fs.exists(`${gameDir}docker-compose.yml`))) {
+			await fse.copy(
+				path.join(__dirname, `../../../game-setups/${game}`),
+				gameDir,
+				{
+					overwrite: false,
+				}
+			);
+		}
+		if (!(await fs.exists(`${gameDir}.env`))) {
+			await fs.writeFile(`${gameDir}.env`, "");
+		}
+		await writeEnvFile({
+			API_ID: gameId,
+			API_NAME: gameName,
+			GAMEPASSWORD: gamePassword,
+			SAVENAME: saveName,
+			GAMEPORT: gamePort,
+			RCONPORT: rconPort,
+		});
 	}
 };

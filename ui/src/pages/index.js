@@ -125,6 +125,8 @@ const GmanmanPage = () => {
 		}
 		if (editMode) {
 			void fetchSpawningPoolData();
+		} else {
+			setSpawningPoolApis([]);
 		}
 	}, [editMode]);
 

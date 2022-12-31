@@ -177,25 +177,8 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	}
 
 	async setupInstanceFiles() {
-		if (!(await fs.exists(`${gameDir}docker-compose.yml`))) {
-			await fse.copy(
-				path.join(__dirname, `../../../game-setups/${game}`),
-				gameDir,
-				{
-					overwrite: false,
-				}
-			);
-		}
-		if (!(await fs.exists(`${gameDir}.env`))) {
-			await fs.writeFile(`${gameDir}.env`, "");
-		}
+		await super.setupInstanceFiles();
 		await writeEnvFile({
-			API_ID: gameId,
-			API_NAME: gameName,
-			GAMEPASSWORD: gamePassword,
-			SAVENAME: saveName,
-			GAMEPORT: gamePort,
-			RCONPORT: rconPort,
 			EXTRAPORT: gamePort + 2,
 		});
 	}
