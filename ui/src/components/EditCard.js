@@ -20,6 +20,8 @@ import { css } from "@emotion/react";
 import { TextField } from "@mui/material";
 import { useStaticQuery, graphql } from "gatsby";
 import Autocomplete from "@mui/material/Autocomplete";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 const gameApiOptions = [
 	{
@@ -236,6 +238,15 @@ export default function EditCard({
 				</Grid>
 			</CardContent>
 			<CardActions>
+				<FormControlLabel
+					control={
+						<Switch
+							onChange={() => patchSettings({ disabled: !settings.disabled })}
+							checked={!settings.disabled}
+						/>
+					}
+					label="Enabled"
+				/>
 				<Button
 					color="primary"
 					css={css`

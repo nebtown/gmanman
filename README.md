@@ -28,7 +28,6 @@
 - chat
 - sort Cards by most recently running
 - EditCard.js can probably derive the list of games that support SpawningPool from Gateway, who can learn it based on gameApis reporting the feature
-- Allow disabling SpawningPool instances (visible only in Edit Mode)
 
 # Dev Guide
 

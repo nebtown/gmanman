@@ -30,6 +30,9 @@ async function initSpawningPool() {
 	const spawningPools = await readSpawningPoolConfig();
 	for (let childApi of Object.values(spawningPools)) {
 		console.log("Checking child gameApi ", childApi.gameId);
+		if (childApi.disabled) {
+			continue;
+		}
 		try {
 			const { data } = await axios.get(
 				`http://localhost:${childApi.apiPort}/control`
