@@ -21,7 +21,7 @@
     "md5": "^2.3.0",
     "minimist": "^1.2.6",
     "moment": "^2.29.3",
-    "moment-timezone": "^0.5.34",
+    "moment-timezone": "^0.5.35",
     "otplib": "^12.0.1",
     "ps-node": "^0.1.6",
     "sodium": "^3.0.2",
