@@ -20,7 +20,7 @@
     "jwks-rsa": "^2.0.5",
     "md5": "^2.3.0",
     "minimist": "^1.2.6",
-    "moment": "^2.29.3",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.34",
     "otplib": "^12.0.1",
     "ps-node": "^0.1.6",
