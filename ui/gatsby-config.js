@@ -8,6 +8,7 @@ module.exports = {
 			"https://gmanman.nebtown.info/gateway/",
 	},
 	plugins: [
+		`gatsby-plugin-emotion`,
 		{
 			resolve: `gatsby-plugin-sass`,
 			options: { implementation: require("sass") },

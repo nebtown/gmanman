@@ -14,9 +14,16 @@ import Card from "@mui/material/Card";
 // Force these components to only be loaded clientside, not during SSR
 const ServerCard = React.lazy(() => import("../components/ServerCard"));
 const LoginButton = React.lazy(() => import("../components/LoginButton"));
+const CreateGameButton = React.lazy(() =>
+	import("../components/CreateGameButton")
+);
 import { useMountEffect } from "../util/hooks";
 
 import theme from "../theme";
+import EditModeToggle from "./../components/EditModeToggle";
+import { useLocalStorage } from "@rehooks/local-storage";
+import { useAuthedAxios } from "./../util/useAuthedAxios";
+import { Alert } from "@mui/material";
 
 const titleOptions = [
 	"GmanMan 2: Eclectic Boogaloo",
@@ -74,13 +81,45 @@ const GmanmanPage = () => {
 			}
 		`
 	);
+	const authedAxios = useAuthedAxios();
+
+	const [editMode, setEditMode] = useLocalStorage("editMode");
+	const [errors, setErrors] = useState([]);
+	function addError(label, severity) {
+		setErrors((errors) => [
+			...errors.filter((error) => error.label !== label),
+			{ label, severity, timeout: Date.now() + 5000 },
+		]);
+	}
 	const [games, setGames] = useState([]);
+	const [spawningPoolApis, setSpawningPoolApis] = useState([]);
 	async function updateRegisteredGames() {
+		setErrors((errors) => errors.filter(({ timeout }) => timeout > Date.now()));
 		if (document.hidden) {
 			return;
 		}
-		const { data } = await axios.get(`${gatewayUrl}register/`);
-		setGames(data.games);
+		try {
+			const { data } = await axios.get(`${gatewayUrl}register/`);
+			setGames(data.games);
+		} catch (e) {
+			console.error("Get /gateway/register/ Error: ", e);
+			addError(
+				"Unable to contact Gateway API, it probably needs restarting :("
+			);
+			return;
+		}
+		if (editMode) {
+			const { data: spawningPoolData } = await authedAxios.get(
+				`${gatewayUrl}spawningPool/`
+			);
+			setSpawningPoolApis((pools) => {
+				console.log("pools", pools);
+				return [
+					...(pools.length > 0 && pools[0].isNew ? [pools[0]] : []),
+					...spawningPoolData.gameApis,
+				];
+			});
+		}
 	}
 	useMountEffect(() => {
 		updateRegisteredGames();
@@ -92,6 +131,22 @@ const GmanmanPage = () => {
 		query.better ||
 		(new Date().getMonth() + 1 === 4 && new Date().getDay() === 1) ||
 		pageRandom < 0.02;
+
+	const gameIds = games.map(({ gameId }) => gameId);
+	const shownGames = [
+		...spawningPoolApis
+			.filter(({ gameId }) => !gameIds.includes(gameId))
+			.map((poolApi) => ({ ...poolApi, apiOffline: true })), // add in offline apis
+		...games,
+	].filter(({ gameId, name }, index, self) => {
+		if (query.id) {
+			return gameId === query.id;
+		}
+		if (query.name) {
+			return name.toLowerCase().includes(query.name.toLowerCase());
+		}
+		return true;
+	});
 
 	let renderedContainer = (
 		<Container>
@@ -134,29 +189,39 @@ const GmanmanPage = () => {
 			{!isSSR && (
 				<React.Suspense fallback={<div />}>
 					<Grid container spacing={5} component="main">
-						{games
-							.filter(({ id, name }) => {
-								if (query.id) {
-									return id === query.id;
-								}
-								if (query.name) {
-									return name.toLowerCase().includes(query.name.toLowerCase());
-								}
-								return true;
-							})
-							.map(({ game, id, name, ...gameProps }) => (
-								<Grid item key={id} xs={12} sm={6} md={4}>
-									<ServerCard
-										game={game}
-										id={id}
-										title={name}
-										icon={`/icons/${game}.png`}
-										baseUrl={`${gatewayUrl}${id}/`}
-										className={query.id ? "game-card--big" : ""}
-										{...gameProps}
-									/>
-								</Grid>
-							))}
+						{errors.map(({ label, severity }) => (
+							<Grid item xs={12} key={label}>
+								<Alert
+									severity={severity || "error"}
+									onClose={() =>
+										setErrors((errors) =>
+											errors.filter((error) => error.label !== label)
+										)
+									}
+								>
+									{label}
+								</Alert>
+							</Grid>
+						))}
+						{shownGames.map(({ game, gameId, name, ...gameProps }) => (
+							<Grid item key={gameId || "new"} xs={12} sm={6} md={4}>
+								<ServerCard
+									game={game}
+									gameId={gameId}
+									title={name}
+									icon={`/icons/${game !== "docker" ? game : gameId}.png`}
+									baseUrl={`${gatewayUrl}${gameId}/`}
+									className={query.id ? "game-card--big" : ""}
+									setSpawningPoolApis={setSpawningPoolApis}
+									usesSpawningPool={
+										!!spawningPoolApis.find(
+											(poolApi) => poolApi.gameId === gameId
+										)
+									}
+									{...gameProps}
+								/>
+							</Grid>
+						))}
 
 						{april1 && (
 							<Grid item xs={12} sm={6} md={4}>
@@ -168,7 +233,24 @@ const GmanmanPage = () => {
 							</Grid>
 						)}
 					</Grid>
-					<LoginButton gatewayUrl={gatewayUrl} />
+					<Grid
+						container
+						spacing={1}
+						style={{
+							position: "absolute",
+							top: "1em",
+							right: "3em",
+							justifyContent: "end",
+							alignItems: "center",
+						}}
+					>
+						<CreateGameButton
+							gatewayUrl={gatewayUrl}
+							setSpawningPoolApis={setSpawningPoolApis}
+						/>
+						<EditModeToggle />
+						<LoginButton gatewayUrl={gatewayUrl} />
+					</Grid>
 				</React.Suspense>
 			)}
 		</Container>

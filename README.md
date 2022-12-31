@@ -26,3 +26,12 @@
 
 - auto save/backup
 - chat
+- sort Cards by most recently running
+- EditCard.js can probably derive the list of games that support SpawningPool from Gateway, who can learn it based on gameApis reporting the feature
+
+# Dev Guide
+
+## Adding support for a new Game
+
+1. Create a new `./game-api/src/games/` manager, extending either `GenericDockerManager` or `BaseGameManager`
+2. Add to `./ui/src/components/EditCard.js`'s `gameApiOptions`

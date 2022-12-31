@@ -9,7 +9,7 @@ const {
 	dockerIsProcessRunning,
 	dockerLogRead,
 	readEnvFileCsv,
-	writeEnvFileCsv,
+	writeEnvFile,
 	steamWorkshopGetModSearch,
 } = require("./common-helpers");
 
@@ -81,7 +81,7 @@ module.exports = class ArkManager {
 			.filter(({ enabled }) => enabled)
 			.map(({ id }) => id)
 			.join(",");
-		await writeEnvFileCsv("ARK_MODS", modsString);
+		await writeEnvFile({ ARK_MODS: modsString });
 		return true;
 	}
 	async getModSearch(query) {

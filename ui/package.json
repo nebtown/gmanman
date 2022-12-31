@@ -26,6 +26,7 @@
     "axios": "^1.2.1",
     "classnames": "^2.2.6",
     "gatsby": "^5.3.3",
+    "gatsby-plugin-emotion": "^8.3.0",
     "gatsby-plugin-image": "^3.3.2",
     "gatsby-plugin-manifest": "^5.3.1",
     "gatsby-plugin-sass": "^6.3.1",

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import {
@@ -7,6 +7,7 @@ import {
 	GoogleOAuthProvider,
 } from "@react-oauth/google";
 import { useLocalStorage } from "@rehooks/local-storage";
+import Grid from "@mui/material/Grid";
 import useAsyncEffect from "use-async-effect";
 import { Button } from "@mui/material";
 
@@ -43,6 +44,7 @@ export default function LoginButton({ gatewayUrl }) {
 	const [loginToken, setLoginToken, delLoginToken] =
 		useLocalStorage("googleLogin");
 	const [isAdmin, setIsAdmin, delIsAdmin] = useLocalStorage("isAdmin");
+	const [loggedInBefore] = useState(!!loginToken);
 	useAsyncEffect(
 		async (isMounted) => {
 			if (!tokenIsValid(loginToken)) {
@@ -72,17 +74,13 @@ export default function LoginButton({ gatewayUrl }) {
 	);
 	return (
 		<GoogleOAuthProvider clientId={oAuthClientId}>
-			<div
-				style={{
-					position: "absolute",
-					top: "1em",
-					right: "1em",
-				}}
-			>
+			<Grid item>
 				{!tokenIsValid(loginToken) ? (
 					<GoogleLogin
 						buttonText="Login"
 						auto_select
+						useOneTap={loggedInBefore}
+						itp_support
 						onSuccess={async (response) => {
 							console.debug(
 								"Google Login: Success",
@@ -110,7 +108,7 @@ export default function LoginButton({ gatewayUrl }) {
 						Logout
 					</Button>
 				)}
-			</div>
+			</Grid>
 		</GoogleOAuthProvider>
 	);
 }

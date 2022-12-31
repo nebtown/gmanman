@@ -7,17 +7,24 @@ const {
 	gameId,
 	debugLog,
 	connectUrl,
-	rconPort,
 	gameDir,
+	gameName,
+	saveName,
+	gamePassword,
 } = require("../cliArgs");
+let { gamePort, rconPort } = require("../cliArgs");
+
+if (!gamePort) gamePort = 2456;
+if (!rconPort) rconPort = gamePort + 1;
+
 const {
 	dockerComposePull,
 	gamedigQueryPlayers,
 	readEnvFileCsv,
-	writeEnvFileCsv,
+	writeEnvFile,
 } = require("./common-helpers");
 const GenericDockerManager = require("./docker");
-const { spawnProcess } = require("../libjunkdrawer/fsPromises");
+const fs = require("../libjunkdrawer/fsPromises");
 const fse = require("fs-extra");
 
 const reDownloadUrl1 = /package\/download\/([^\/]+)\/([^\/]+)\/([^\/]+)\//;
@@ -28,11 +35,15 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	getConnectUrl() {
 		return connectUrl;
 	}
+	getRconPort() {
+		return rconPort;
+	}
 	oldGetPlayersResult = false;
 	async getPlayers() {
 		const lookupPromise = gamedigQueryPlayers({
 			type: "valheim",
 			socketTimeout: 4000,
+			port: rconPort,
 		}).then((result) => {
 			this.oldGetPlayersResult = result;
 			return result;
@@ -84,13 +95,15 @@ module.exports = class ValheimManager extends GenericDockerManager {
 			.filter(({ enabled }) => enabled)
 			.map(({ id }) => allModsById[id].downloadUrl)
 			.join(",\n");
-		await writeEnvFileCsv("MODS", modsString);
-
 		const modsStringDisabled = modsList
 			.filter(({ enabled }) => !enabled)
 			.map(({ id }) => allModsById[id].downloadUrl)
 			.join(",\n");
-		await writeEnvFileCsv("MODS_OFF", modsStringDisabled);
+
+		await writeEnvFile({
+			MODS: modsString,
+			MODS_OFF: modsStringDisabled,
+		});
 		return true;
 	}
 
@@ -156,10 +169,34 @@ module.exports = class ValheimManager extends GenericDockerManager {
 	}
 	async getModPackHash() {
 		return (
-			await spawnProcess("bash", [
+			await fs.spawnProcess("bash", [
 				"-c",
 				`cd ${gameDir} && find server/BepInEx/{config,plugins} -type f -exec md5sum {} \\; | sort -k 2 | md5sum | cut -d ' ' -f1`,
 			])
 		).trim();
+	}
+
+	async setupInstanceFiles() {
+		if (!(await fs.exists(`${gameDir}docker-compose.yml`))) {
+			await fse.copy(
+				path.join(__dirname, `../../../game-setups/${game}`),
+				gameDir,
+				{
+					overwrite: false,
+				}
+			);
+		}
+		if (!(await fs.exists(`${gameDir}.env`))) {
+			await fs.writeFile(`${gameDir}.env`, "");
+		}
+		await writeEnvFile({
+			API_ID: gameId,
+			API_NAME: gameName,
+			GAMEPASSWORD: gamePassword,
+			SAVENAME: saveName,
+			GAMEPORT: gamePort,
+			RCONPORT: rconPort,
+			EXTRAPORT: gamePort + 2,
+		});
 	}
 };
