@@ -58,7 +58,7 @@ export function Head() {
 				rel="stylesheet"
 				href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap"
 			/>
-			{april1 && <script src="/april1.css" />}
+			{april1 && <link rel="stylesheet" href="/april1.css" />}
 		</>
 	);
 }
