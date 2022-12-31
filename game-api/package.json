@@ -21,7 +21,7 @@
     "express-timeout-handler": "^2.2.0",
     "fs-extra": "^11.1.0",
     "gamedig": "^3.0.9",
-    "minimist": "^1.2.2",
+    "minimist": "^1.2.6",
     "modern-rcon": "^1.0.3",
     "node-7z": "^2.1.2",
     "otplib": "^12.0.1",
