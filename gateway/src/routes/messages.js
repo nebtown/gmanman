@@ -318,16 +318,14 @@ function initWebsocketListener(httpServer) {
 
 const gameMessageMeta = {};
 let knownGameApis = {};
-async function pollGameHealth({ id, game, name, url }) {
-	if (id === "valheim-zach") {
-		return;
-	}
+async function pollGameHealth(gameApi) {
+	const { id, game, name, url } = gameApi;
 	if (!gameMessageMeta[id]) {
 		gameMessageMeta[id] = {};
 	}
 	const { data } = await axios({
 		method: "GET",
-		url: `${url}/control`,
+		url: `${url}control`,
 		timeout: 8000,
 	});
 	if (data.status === "running") {
@@ -367,6 +365,7 @@ async function pollGameHealth({ id, game, name, url }) {
 		} catch (err) {
 			console.error("Failed to edit message: ", err);
 		}
+		gameApi.lastRunningTime = Date.now();
 	} else if (["stopping", "stopped"].includes(data.status)) {
 		if (gameMessageMeta[id].message) {
 			const embed = new Discord.MessageEmbed().setTitle(`${name} was running`);
@@ -410,11 +409,16 @@ async function initPlayerStatusPoller(_knownGameApis) {
 	}
 
 	setInterval(async () => {
-		try {
-			await Promise.all(Object.values(knownGameApis).map(pollGameHealth));
-		} catch (err) {
-			console.warn("Discord PlayerStatusPoller error: ", err.message);
-		}
+		const gameApisList = Object.values(knownGameApis);
+		const results = await Promise.allSettled(gameApisList.map(pollGameHealth));
+		results.forEach((result, i) => {
+			if (result.status === "rejected") {
+				console.warn(
+					`Discord PlayerStatusPoller error ${gameApisList[i].gameId}: `,
+					result.reason.message
+				);
+			}
+		});
 		try {
 			await fs.promises.writeFile(
 				savedMessagesFilePath,

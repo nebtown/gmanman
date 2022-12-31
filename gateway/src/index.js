@@ -75,16 +75,21 @@ app.post("/auth", async (request, response) => {
 
 app.get("/register", (request, response) => {
 	response.json({
-		games: Object.values(knownGameApis).map(
-			({ game, gameId, name, connectUrl, features }) => ({
+		games: Object.values(knownGameApis)
+			.sort(
+				(a, b) =>
+					(b.lastRunningTime || 0) - (a.lastRunningTime || 0) ||
+					a.game.localeCompare(b.game) ||
+					a.name.localeCompare(b.name)
+			)
+			.map(({ game, gameId, name, connectUrl, features }) => ({
 				game,
 				id: gameId, // todo: remove once new UI deployed
 				gameId,
 				name,
 				connectUrl,
 				features,
-			})
-		),
+			})),
 	});
 });
 /**
