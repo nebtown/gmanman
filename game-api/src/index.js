@@ -259,6 +259,10 @@ app.post("/rcon", async (request, response) => {
 app.listen(listenPort);
 console.log(`Listening on port ${listenPort}`);
 
+if (gameManager.setupInstanceFiles) {
+	gameManager.setupInstanceFiles();
+}
+
 async function registerWithGateway() {
 	try {
 		return await axios.post(`${gatewayUrl}register/`, {
@@ -277,6 +281,7 @@ async function registerWithGateway() {
 				gameManager.updateOnStart && "updateOnStart",
 				gameManager.filesToBackup && "backup",
 				gameManager.rcon && "rcon",
+				gameManager.setupInstanceFiles && "spawningPool",
 			].filter(Boolean),
 		});
 	} catch (err) {

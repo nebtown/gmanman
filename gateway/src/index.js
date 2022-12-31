@@ -52,6 +52,12 @@ const {
 } = require("./routes/messages");
 app.use("/messages", messagesRouter);
 
+const {
+	spawningPoolRouter,
+	initSpawningPool,
+} = require("./routes/spawningPool");
+app.use("/spawningPool", spawningPoolRouter);
+
 app.post("/auth", async (request, response) => {
 	const token = request.body.id_token;
 	try {
@@ -70,9 +76,10 @@ app.post("/auth", async (request, response) => {
 app.get("/register", (request, response) => {
 	response.json({
 		games: Object.values(knownGameApis).map(
-			({ game, id, name, connectUrl, features }) => ({
+			({ game, gameId, name, connectUrl, features }) => ({
 				game,
-				id,
+				id: gameId, // todo: remove once new UI deployed
+				gameId,
 				name,
 				connectUrl,
 				features,
@@ -83,7 +90,7 @@ app.get("/register", (request, response) => {
 /**
  * {
 		game: "factorio",
-		id: "factorio-angelbob",
+		gameId: "factorio-angelbob",
 		name: "Factorio Angelbob",
 		connectUrl: "steam://connect/gman.nebtown.info:27015",
 		features: [
@@ -94,8 +101,9 @@ app.get("/register", (request, response) => {
 	}
  */
 app.post("/register", (request, response) => {
-	knownGameApis[request.body.id] = { ...request.body, timeoutStartTime: 0 };
-	debugLog(`Registered ${request.body.id}`, request.body);
+	const id = request.body.gameId || request.body.id;
+	knownGameApis[id] = { gameId: id, ...request.body, timeoutStartTime: 0 };
+	debugLog(`Registered ${id}`, request.body);
 	response.json({});
 });
 
@@ -107,7 +115,10 @@ app.all("/:gameId/*", async (request, response) => {
 	}
 	const headers = request.headers || {};
 	const queryParams = request.query || {};
-	const bodyParams = request.body || {};
+	const bodyParams =
+		request.body && Object.values(request.body).length
+			? request.body
+			: undefined;
 	let requestURL = `${gameApi.url}${endpoint}`;
 	const extraAxiosOptions = {};
 	if (endpoint.startsWith("mods/pack")) {
@@ -143,7 +154,7 @@ app.all("/:gameId/*", async (request, response) => {
 		gameApi.timeoutStartTime = 0;
 	} catch (err) {
 		if (err.code === "ECONNREFUSED") {
-			debugLog("Game API", gameApi.url, err.message);
+			debugLog("Game API ECONNREFUSED", gameApi.url, err.message);
 			response.status(504).json({ message: "Game API offline" });
 			if (!gameApi.timeoutStartTime) {
 				gameApi.timeoutStartTime = Date.now();
@@ -168,17 +179,20 @@ app.all("/:gameId/*", async (request, response) => {
 					if (extraAxiosOptions.responseType === "stream") {
 						responseData = await streamToString(responseData);
 					}
-					debugLog(
-						"Game API",
-						gameApi.url,
-						err.message,
-						`Status: ${status} ${statusText}`,
-						responseData
-					);
+					if (status !== 304) {
+						debugLog(
+							"Game API",
+							requestURL,
+							err.message,
+							`Status: ${status} ${statusText}`,
+							responseData,
+							responseHeaders
+						);
+					}
 					response.status(status).json(responseData);
 			}
 		} else {
-			console.warn("Game API", err);
+			console.warn("Game API 500", err);
 			response.status(500).json({});
 		}
 	}
@@ -197,4 +211,5 @@ const httpServer = http.createServer(app);
 httpServer.listen(listenPort);
 initWebsocketListener(httpServer);
 initPlayerStatusPoller(knownGameApis);
+initSpawningPool();
 console.log(`Gateway listening on port ${listenPort}`);

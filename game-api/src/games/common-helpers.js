@@ -137,24 +137,31 @@ async function rconSRCDSConnect(port) {
 }
 
 async function readEnvFileCsv(envName) {
-	const env = dotenv.parse(
-		await fsPromises.readFile(path.join(gameDir, ".env"))
-	);
-	if (!env[envName]) {
+	try {
+		const env = dotenv.parse(
+			await fsPromises.readFile(path.join(gameDir, ".env"))
+		);
+		if (!env[envName]) {
+			return [];
+		}
+		return env[envName].trim().split(",");
+	} catch (e) {
+		console.warn("Unable to read .env", e);
 		return [];
 	}
-	return env[envName].trim().split(",");
 }
 
-async function writeEnvFileCsv(envName, newEnvValue) {
+async function writeEnvFile(changes) {
 	const envFilePath = path.join(gameDir, ".env");
 	const envFileContents = (await fsPromises.readFile(envFilePath)) || "";
-	const newEnvFile =
-		envFileContents
-			.toString()
-			.replace(new RegExp(`^${envName}=".*"\n?`, "ms"), "")
-			.replace(new RegExp(`^${envName}=.*$\n?`, "m"), "")
-			.trim() + `\n${envName}="${newEnvValue}"\n`;
+	let newEnvFile = envFileContents.toString();
+	for (let envName in changes) {
+		newEnvFile =
+			newEnvFile
+				.replace(new RegExp(`^${envName}=".*?"\n?`, "ms"), "")
+				.replace(new RegExp(`^${envName}=.*?$\n?`, "m"), "")
+				.trim() + `\n${envName}="${changes[envName]}"\n`;
+	}
 	await fsPromises.writeFile(envFilePath, newEnvFile);
 }
 
@@ -296,7 +303,7 @@ module.exports = {
 	rconConnect,
 	rconSRCDSConnect,
 	readEnvFileCsv,
-	writeEnvFileCsv,
+	writeEnvFile,
 	steamWorkshopGetModSearch,
 	BaseGameManager,
 };

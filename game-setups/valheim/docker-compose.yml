@@ -1,18 +1,21 @@
 version: "3"
 services:
   valheim:
-    container_name: valheim
+    container_name: "${API_ID:-valheim}"
     image: mbround18/valheim:latest
     environment:
-      - PORT=2456
-      - NAME="Nebtown Yngheim"
-      - PASSWORD="1234"
-      - TZ=America/Vancouver
-      - WORLD=Yngheim
+      PORT: "${GAMEPORT:-2456}"
+      NAME: "${API_NAME:-Nebtown}"
+      PASSWORD: "${GAMEPASSWORD:-1234}"
+      TZ: America/Vancouver
+      WORLD: "${SAVENAME:-worldsave}"
+      UPDATE_ON_STARTUP: 1
+      TYPE: ValheimPlus
+      MODS: ${MODS}
     ports:
-      - "2456:2456/udp"
-      - "2457:2457/udp"
-      - "2458:2458/udp"
+      - "${GAMEPORT:-2456}:${GAMEPORT:-2456}/udp"
+      - "${RCONPORT:-2457}:${RCONPORT:-2457}/udp"
+      - "${EXTRAPORT:-2458}:${EXTRAPORT:-2458}/udp"
     volumes:
-    - ./saves:/home/steam/.config/unity3d/IronGate/Valheim
-    - ./server:/home/steam/valheim
+      - ./saves:/home/steam/.config/unity3d/IronGate/Valheim
+      - ./server:/home/steam/valheim

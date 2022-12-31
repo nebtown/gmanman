@@ -21,8 +21,10 @@ module.exports = {
 	listenPort: argv.port || 6726,
 	gatewayUrl: argv.gatewayUrl || "https://gmanman.nebtown.info/gateway/",
 	connectUrl: argv.connectUrl,
+	gamePort: argv.gamePort,
 	rconPort: argv.rconPort,
 	steamApiKey: argv.steamApiKey,
 	saveName: argv.saveName || gameId.replace(new RegExp(`^${game}[\-_]?`), ""),
+	gamePassword: argv.gamePassword,
 	serviceAccount: argv.serviceAccount || __dirname + "/../serviceaccount.json",
 };

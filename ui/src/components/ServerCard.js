@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
 import { useLocalStorage } from "@rehooks/local-storage";
@@ -11,6 +11,7 @@ import CardHeader from "@mui/material/CardHeader";
 
 import Button from "@mui/material/Button";
 import CardMedia from "@mui/material/CardMedia";
+import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
 import Tooltip from "@mui/material/Tooltip";
 
@@ -26,6 +27,7 @@ import PowerIcon from "@mui/icons-material/Power";
 import SubjectIcon from "@mui/icons-material/Subject";
 import UpdateIcon from "@mui/icons-material/SystemUpdateAlt";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 import { useInterval, useMountEffect } from "../util/hooks";
 import { useAuthedAxios } from "../util/useAuthedAxios";
@@ -33,28 +35,37 @@ import LogViewer from "./LogViewer";
 import ModsViewer from "./ModsViewer";
 import BackupsViewer from "./BackupsViewer";
 import ConfirmationModal from "./ConfirmationModal";
+import CardFlip from "./CardFlip";
+import EditCard from "./EditCard";
 
 ServerCard.propTypes = {
 	className: PropTypes.string,
 	game: PropTypes.string,
-	id: PropTypes.string,
+	gameId: PropTypes.string,
 	title: PropTypes.string.isRequired,
 	icon: PropTypes.string,
 	baseUrl: PropTypes.string.isRequired,
 	features: PropTypes.arrayOf(PropTypes.string).isRequired,
 	connectUrl: PropTypes.string,
+	setSpawningPoolApis: PropTypes.func,
 };
 
 export default function ServerCard({
 	className,
-	game,
-	id,
-	title,
-	icon,
-	baseUrl,
-	features,
-	connectUrl,
+	setSpawningPoolApis,
+	...props
 }) {
+	const {
+		game,
+		gameId,
+		title,
+		icon,
+		baseUrl,
+		features = [],
+		connectUrl,
+		apiOffline,
+		usesSpawningPool,
+	} = props;
 	const supportsLogs = features.includes("logs");
 	const supportsUpdate = features.includes("update");
 	const supportsMods = features.includes("mods");
@@ -67,10 +78,13 @@ export default function ServerCard({
 	const rconUrl = baseUrl + "rcon/";
 
 	const [isAdmin] = useLocalStorage("isAdmin");
+	const [editMode] = useLocalStorage("editMode");
 	const authedAxios = useAuthedAxios();
 	const smallScreen = useMediaQuery(`(max-width:400px)`);
 
-	const [status, setStatus] = useState("unknown");
+	const [status, setStatus] = useState(() =>
+		apiOffline ? "apiOffline" : "unknown"
+	);
 	/** status: PropTypes.oneOf([
 		"stopped",
 		"starting",
@@ -89,9 +103,17 @@ export default function ServerCard({
 	const [modsOpen, setModsOpen] = useState(false);
 	const [stopConfirmationOpen, setStopConfirmationOpen] = useState(false);
 	const [backupsOpen, setBackupsOpen] = useState(false);
+	const [editing, setEditing] = useState(!gameId);
+
+	useEffect(() => {
+		if (!gameId && !editing) {
+			// remove the blank card once its submitted
+			setSpawningPoolApis((apis) => apis.filter(({ gameId }) => !!gameId));
+		}
+	}, [gameId, editing]);
 
 	const pollStatus = async () => {
-		if (document.hidden) {
+		if (document.hidden || !gameId || apiOffline) {
 			return;
 		}
 		try {
@@ -187,16 +209,30 @@ export default function ServerCard({
 			? "Stopping"
 			: status === "updating"
 			? "Updating"
+			: status === "apiOffline"
+			? "GameApi Offline"
 			: "Status Unknown";
 
 	const playerNamesString = players.map(({ name }) => name).join(", ");
 
-	return (
+	const cardRendered = (
 		<Card
 			raised={["starting", "running", "stopping", "updating"].includes(status)}
 			className={`game-card ${status} ${className}`}
 		>
-			<CardHeader title={title} />
+			<CardHeader
+				title={title}
+				action={
+					editMode && usesSpawningPool ? (
+						<IconButton
+							aria-label="settings"
+							onClick={() => setEditing((state) => !state)}
+						>
+							<SettingsIcon />
+						</IconButton>
+					) : undefined
+				}
+			/>
 			<CardContent style={{ minHeight: "96px" }}>
 				<Grid
 					container
@@ -269,7 +305,7 @@ export default function ServerCard({
 									)}
 									{links.length > 0 &&
 										links.map(({ link, title }, i) => (
-											<Grid item xs={6} key={`link-${id}-${i}`}>
+											<Grid item xs={6} key={`link-${gameId}-${i}`}>
 												<Button
 													color="inherit"
 													size="small"
@@ -396,7 +432,7 @@ export default function ServerCard({
 			{supportsBackup && (
 				<BackupsViewer
 					title={title}
-					gameId={id}
+					gameId={gameId}
 					baseUrl={baseUrl}
 					open={backupsOpen}
 					setOpen={setBackupsOpen}
@@ -432,5 +468,20 @@ export default function ServerCard({
 				)}
 			</ConfirmationModal>
 		</Card>
+	);
+
+	return (
+		<CardFlip
+			cardFront={cardRendered}
+			cardBack={
+				<EditCard
+					{...props}
+					editing={editing}
+					setEditing={setEditing}
+					active={editing}
+				/>
+			}
+			flipped={editing}
+		/>
 	);
 }

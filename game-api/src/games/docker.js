@@ -39,11 +39,15 @@ module.exports = class GenericDockerManager extends BaseGameManager {
 		};
 	}
 
+	getRconPort() {
+		return rconPort;
+	}
+
 	async rcon(command) {
 		debugLog(`Running rcon: ${command}`);
 		try {
 			const response = await (
-				await rconSRCDSConnect(rconPort)
+				await rconSRCDSConnect(this.getRconPort())
 			).command(command, 500);
 			debugLog(`Rcon response: ${response}`);
 			return true;
