@@ -107,7 +107,12 @@ app.get("/register", (request, response) => {
  */
 app.post("/register", (request, response) => {
 	const id = request.body.gameId || request.body.id;
-	knownGameApis[id] = { gameId: id, ...request.body, timeoutStartTime: 0 };
+	knownGameApis[id] = {
+		gameId: id,
+		...request.body,
+		timeoutStartTime: 0,
+		lastRunningTime: knownGameApis[id] ? knownGameApis[id].lastRunningTime : 0,
+	};
 	debugLog(`Registered ${id}`, request.body);
 	response.json({});
 });

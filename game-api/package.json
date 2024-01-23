@@ -20,7 +20,7 @@
     "express-prettify": "^0.1.1",
     "express-timeout-handler": "^2.2.0",
     "fs-extra": "^11.1.0",
-    "gamedig": "^3.0.9",
+    "gamedig": "^5.0.0-beta.0",
     "minimist": "^1.2.2",
     "modern-rcon": "^1.0.3",
     "node-7z": "^2.1.2",

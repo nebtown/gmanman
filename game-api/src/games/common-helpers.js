@@ -6,7 +6,7 @@ const compose = require("docker-compose");
 const Rcon = require("modern-rcon");
 const srcdsRcon = require("srcds-rcon");
 const axios = require("axios");
-const Gamedig = require("gamedig");
+const importGamedig = import("gamedig");
 const docker = new (require("dockerode"))();
 const { readFile, writeFile } = require("../libjunkdrawer/fsPromises");
 const {
@@ -30,6 +30,9 @@ function dockerComposeStart() {
 }
 function dockerComposeStop() {
 	compose.down({ dir: gameDir });
+}
+function dockerComposeExec(containerId, command) {
+	return compose.exec(containerId, command, { dir: gameDir });
 }
 function dockerComposePull(params) {
 	return compose.pullAll({
@@ -105,7 +108,8 @@ async function dockerLogStreamStart(container) {
 
 async function gamedigQueryPlayers(options = {}) {
 	try {
-		const response = await Gamedig.query({
+		const GameDig = (await importGamedig).GameDig;
+		const response = await GameDig.query({
 			type: gameId,
 			host: `localhost`,
 			socketTimeout: 750,
@@ -296,6 +300,7 @@ module.exports = {
 	dockerComposeStop,
 	dockerComposeBuild,
 	dockerComposePull,
+	dockerComposeExec,
 	dockerIsProcessRunning,
 	dockerLogs,
 	dockerLogRead,

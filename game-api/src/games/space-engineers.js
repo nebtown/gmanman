@@ -1,4 +1,3 @@
-const gamedig = require("gamedig");
 const xml2js = require("xml2js");
 const fsPromises = require("../libjunkdrawer/fsPromises");
 const path = require("path");

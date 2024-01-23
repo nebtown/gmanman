@@ -1,4 +1,3 @@
-const Gamedig = require("gamedig");
 const path = require("path");
 const axios = require("axios");
 

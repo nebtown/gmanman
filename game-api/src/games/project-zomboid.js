@@ -16,7 +16,7 @@ module.exports = class ProjectZomboidManager extends GenericDockerManager {
 	}
 	async getPlayers() {
 		return await gamedigQueryPlayers({
-			type: "css", // Gamedig lacks zomboid but css is compatible
+			type: "projectzomboid",
 			port: 16261,
 			socketTimeout: 4000,
 		});

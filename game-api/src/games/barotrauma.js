@@ -1,10 +1,15 @@
 const { debugLog, connectUrl } = require("../cliArgs");
-const { dockerLogRead, gamedigQueryPlayers } = require("./common-helpers");
+const { dockerLogRead } = require("./common-helpers");
 const GenericDockerManager = require("./docker");
+let { gamePort, rconPort } = require("../cliArgs");
 
+if (!rconPort) rconPort = gamePort + 1;
 module.exports = class BarotraumaManager extends GenericDockerManager {
 	getConnectUrl() {
 		return `steam://connect/${connectUrl || "gman.nebtown.info:27015"}`;
+	}
+	getRconPort() {
+		return rconPort;
 	}
 	async getPlayers() {
 		const { logs, offset } = await dockerLogRead(-15000);

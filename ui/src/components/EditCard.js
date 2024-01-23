@@ -28,6 +28,18 @@ const gameApiOptions = [
 		label: "Valheim",
 		code: "valheim",
 	},
+	{
+		label: "Barotrauma",
+		code: "barotrauma",
+	},
+	{
+		label: "Stationeers",
+		code: "stationeers",
+	},
+	{
+		label: "Palworld",
+		code: "palworld",
+	},
 ];
 
 EditCard.propTypes = {

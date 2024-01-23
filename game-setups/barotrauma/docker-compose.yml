@@ -1,20 +1,18 @@
-version: '3.3'
+version: "3.3"
 
 services:
-    barotrauma:
-        container_name: barotrauma
-        image: 'goldfish92/barotrauma-dedicated-server'
-        environment:
-            BAR_PASSWORD: ""
-            BAR_NAME: "Nebtown Aquatic"
-            BAR_SERVERMESSAGE: "Coop drowning in a burning sub!"
-            BAR_PERMISSIONS: > 
-              Nebual:76561197994054424:All:ambientlight,autoitemplacerdebug,autorestart,autorestartinterval,autorestarttimer,ballastflora,ban,banendpoint,banid,botcount,botspawnmode,calculatehashes,campaigndestination,campaigninfo,clientlist,control,debugai,debugdraw,despawnnow,difficulty,disablecrewai,disableenemyai,dumpids,dumptofile,enablecheats,enablecrewai,enableenemyai,endgame,entitydata,eventmanager,exit,explosion,findentityids,fire,fixhulls,fixitems,followsub,freecamera,freeze,gamemode,giveaffliction,givecommandperm,giveexperience,giveperm,giverank,givetalent,godmode,godmode_mainsub,growthdelay,heal,help,items,kick,kickid,kill,killdisconnectedtimer,killmonsters,lighting,listtasks,lock,lockx,locky,los,maxupgrades,mission,money,msg,mute,netstats,oxygen,power,ragdoll,randomizeseed,readycheck,resetkarma,respawnnow,restart,revive,revokecommandperm,revokeperm,say,seed,servermsg,servername,setclientcharacter,setdifficulty,setkarma,setlocationreputation,setmaxplayers,setpassword,setreputation,setskill,showkarma,showperm,showseed,shuttle,simulatedduplicateschance,simulatedlatency,simulatedloss,skipeventcooldown,spawn,spawnitem,startgame,starttraitormissionimmediately,startwhenclientsready,sub,tags,teleportcharacter,teleportsub,toggleaitargets,togglecampaignteleport,togglecharacternames,togglehud,toggleitemhighlights,togglekarma,togglekarmatestmode,toggleupperhud,togglevoicechatfilters,traitorlist,triggerevent,unban,unbanip,unlocktalents,unmute,upgradeitem,verboselogging,water;
-              Bishop:76561198008580453:All:;
-        ports:
-            - '27015:27015/udp'
-            - '27016:27016/udp'
-        volumes:
-            - './volume/saves:/home/steam/.local/share/Daedalic Entertainment GmbH/Barotrauma/Multiplayer'
-            - './volume:/home/steam/barotrauma-dedicated'
-            - './volume/Submarines:/home/steam/barotrauma-dedicated/Submarines/mounted'
+  barotrauma:
+    container_name: "${API_ID:-barotrauma}"
+    image: "yanwk/barotrauma-server:dockerful"
+    ports:
+      - "${GAMEPORT:-27015}:${GAMEPORT:-27015}/udp"
+      - "${RCONPORT:-27016}:${RCONPORT:-27016}/udp"
+    volumes:
+      - "./volume:/persistence"
+    environment:
+      DEFAULT_SERVERNAME: "${API_NAME:-Barotrauma Aquatic}"
+      DEFAULT_PASSWORD: "${GAMEPASSWORD:-1234}"
+      DEFAULT_PUBLICITY: "true"
+      DEFAULT_LANGUAGE: "English"
+      DEFAULT_OWNER_STEAMNAME: "Nebual"
+      DEFAULT_OWNER_STEAMID: "76561197994054424"

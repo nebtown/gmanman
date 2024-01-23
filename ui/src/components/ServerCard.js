@@ -426,7 +426,7 @@ export default function ServerCard({
 					supportsModSearch={features.includes("modSearch")}
 					open={modsOpen}
 					setOpen={setModsOpen}
-					readOnly={!isAdmin || status !== "stopped"}
+					readOnly={!isAdmin}
 				/>
 			)}
 			{supportsBackup && (

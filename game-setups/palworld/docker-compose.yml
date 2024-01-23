@@ -1,0 +1,23 @@
+services:
+  palworld:
+    image: thijsvanloef/palworld-server-docker:latest
+    restart: on-failure
+    container_name: "${API_ID:-palworld}"
+    ports:
+      - ${GAMEPORT:-8211}:${GAMEPORT:-8211}/udp
+      - ${RCONPORT:-25575}:${RCONPORT:-25575}/tcp
+      - 27015:27015/udp
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - PORT=${GAMEPORT:-8211}
+      - PLAYERS=16
+      - MULTITHREADING=true
+      - RCON_ENABLED=true
+      - RCON_PORT=${RCONPORT:-25575}
+      - ADMIN_PASSWORD="${GAMEPASSWORD:-1234}"
+      - COMMUNITY=false # Enable this if you want your server to show up in the community servers tab, USE WITH SERVER_PASSWORD!
+      - SERVER_PASSWORD="${GAMEPASSWORD:worldofpals}"
+      - SERVER_NAME="${API_NAME:World of Pals}"
+    volumes:
+      - ./palworld:/palworld/

@@ -141,6 +141,7 @@ module.exports = class FactorioManager {
 				id.toLowerCase().includes(query) || label.toLowerCase().includes(query)
 		);
 	}
+	// Mod config may be editable with https://github.com/credomane/factoriomodsettings
 	async filesToBackup() {
 		const saves = (
 			await Promise.all(

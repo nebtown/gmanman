@@ -1,0 +1,16 @@
+version: "3"
+services:
+  valheim:
+    container_name: "${API_ID:-stationeers}"
+    # todo: it seems the official Stationeers Linux binary has been broken since May 2023...
+    image: hetsh/stationeers:latest
+    environment:
+      PORT: "${GAMEPORT:-27015}"
+      NAME: "${API_NAME:-Nebtown}"
+      PASSWORD: "${GAMEPASSWORD:-1234}"
+      TZ: America/Vancouver
+    ports:
+      - "${GAMEPORT:-27015}:${GAMEPORT:-27015}/udp"
+      - "${RCONPORT:-27016}:${RCONPORT:-27016}/udp"
+    volumes:
+      - ./saves:/stationeers
