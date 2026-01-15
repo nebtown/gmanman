@@ -5,8 +5,11 @@ services:
     image: beardedio/terraria:tshock-latest
     container_name: "${API_ID:-terraria}"
     environment:
-      world: "${SAVENAME:-save}".wld
+      world: "${SAVENAME:-save}.wld"
+    entrypoint: "./TShock.Server -configpath /config -worldpath /config -worldselectpath /config -logpath /config -world /config/${SAVENAME:-save}.wld -autocreate 3 -difficulty 0 -worldevil random"
     ports:
       - "${GAMEPORT:-7777}:${GAMEPORT:-7777}"
     volumes:
       - ./config:/config
+    tty: true
+    stdin_open: true

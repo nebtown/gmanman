@@ -24,6 +24,7 @@
     "@rehooks/local-storage": "^2.4.4",
     "awesome-debounce-promise": "^2.1.0",
     "axios": "^1.2.1",
+    "axios-cache-interceptor": "^1.11.3",
     "classnames": "^2.2.6",
     "gatsby": "^5.3.3",
     "gatsby-plugin-emotion": "^8.3.0",

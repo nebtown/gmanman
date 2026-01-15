@@ -1,6 +1,6 @@
 version: "3"
 services:
-  valheim:
+  stationeers:
     container_name: "${API_ID:-stationeers}"
     # todo: it seems the official Stationeers Linux binary has been broken since May 2023...
     image: hetsh/stationeers:latest

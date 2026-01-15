@@ -57,23 +57,30 @@ function checkAuthMiddleware(adminRoutes) {
 		if (!routeInRoutesList(adminRoutes, request)) {
 			return next(); // route doesn't need auth
 		}
-		try {
-			const decoded = await verifyGoogleJWT(request.headers.authorization);
-			if (isEmailAdmin(decoded.email)) {
-				return next(); // they're allowed to use this route
-			}
-			console.warn(
-				`Rejecting unauthorized ${request.method} ${request.originalUrl}`,
-				` for ${decoded.email}`
-			);
-		} catch {
-			console.warn(
-				`Rejecting unauthenticated ${request.method} ${request.originalUrl}`
-			);
+		if (await checkAuth(request, response, next)) {
+			next(); // they're allowed to use this route
 		}
-		response.status(403).json({ error: "Unauthorized" });
-		next("Unauthorized");
 	};
+}
+
+async function checkAuth(request, response, next) {
+	try {
+		const decoded = await verifyGoogleJWT(request.headers.authorization);
+		if (isEmailAdmin(decoded.email)) {
+			return true;
+		}
+		console.warn(
+			`Rejecting unauthorized ${request.method} ${request.originalUrl}`,
+			` for ${decoded.email}`
+		);
+	} catch {
+		console.warn(
+			`Rejecting unauthenticated ${request.method} ${request.originalUrl}`
+		);
+	}
+	response.status(403).json({ error: "Unauthorized" });
+	next("Unauthorized");
+	return false;
 }
 
 module.exports = {
@@ -81,4 +88,5 @@ module.exports = {
 	getAdmins,
 	isEmailAdmin,
 	checkAuthMiddleware,
+	checkAuth,
 };

@@ -26,12 +26,11 @@
 
 - auto save/backup
 - chat
-- EditCard.js can probably derive the list of games that support SpawningPool from Gateway, who can learn it based on gameApis reporting the feature
 - Add SpawningPool support to existing games
 
 # Dev Guide
 
 ## Adding support for a new Game
 
-1. Create a new `./game-api/src/games/` manager, extending either `GenericDockerManager` or `BaseGameManager`
-2. Add to `./ui/src/components/EditCard.js`'s `gameApiOptions`
+1. Create a GameTypeManager in `./game-api/src/games/` (usually one that extends `GenericDockerManager`), setting up at minimum `getPlayers()`, ideally using Gamedig.
+2. Create a `./game-setups/gametype/docker-compose.yml`, which uses Env vars specified in `GameTypeManager.setupInstanceFiles()`, including `API_ID`, `API_NAME`, `GAMEPASSWORD`, `SAVENAME`, `GAMEPORT`, `RCONPORT`. Valheim is a good example of this.

@@ -11,6 +11,7 @@ const {
 	readFile,
 	writeFile,
 	open,
+	readdir,
 } = require("../lib/fsPromises");
 const { jsonPretty } = require("../lib/jsonPretty");
 
@@ -133,15 +134,18 @@ function generateUnusedApiPort(configs) {
 
 // routing stuff
 
-const { checkAuthMiddleware } = require("../lib/login");
+const { checkAuthMiddleware, checkAuth } = require("../lib/login");
 spawningPoolRouter.use(
 	checkAuthMiddleware([
-		["GET", "/"],
-		["PUT", "/"],
+		// ["GET", "/spawningPool"], // checked in method to be more granular
+		["PUT", "/spawningPool"],
 	])
 );
 
-spawningPoolRouter.get("/", async function (req, response) {
+spawningPoolRouter.get("/", async function (req, response, next) {
+	if (!(await checkAuth(req, response, next))) {
+		return;
+	}
 	response.json({ gameApis: Object.values(await readSpawningPoolConfig()) });
 });
 
@@ -164,6 +168,39 @@ spawningPoolRouter.put("/", async function (req, response) {
 
 	await stopChildApi(updatedGameApi.gameId);
 	void initSpawningPool();
+});
+
+let spawningPoolGames = [];
+async function findSpawningPoolSupportedGames() {
+	const gameSetupsDir = path.resolve(__dirname, "../../../game-setups/");
+	const folders = await readdir(gameSetupsDir);
+	spawningPoolGames = (
+		await Promise.all(
+			folders.map(async (folderName) => {
+				if (folderName.startsWith(".")) return;
+
+				const dockerComposePath = path.join(
+					gameSetupsDir,
+					folderName,
+					"docker-compose.yml"
+				);
+				if (!(await exists(dockerComposePath))) {
+					return;
+				}
+				const game = folderName.toLowerCase();
+
+				const dockerComposeFile = await readFile(dockerComposePath);
+				if (dockerComposeFile.includes("API_ID")) {
+					return game;
+				}
+			})
+		)
+	).filter(Boolean);
+}
+findSpawningPoolSupportedGames();
+
+spawningPoolRouter.get("/supportedGames", async function (req, response) {
+	response.json({ games: spawningPoolGames });
 });
 
 module.exports = {

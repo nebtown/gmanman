@@ -23,24 +23,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 
-const gameApiOptions = [
-	{
-		label: "Valheim",
-		code: "valheim",
-	},
-	{
-		label: "Barotrauma",
-		code: "barotrauma",
-	},
-	{
-		label: "Stationeers",
-		code: "stationeers",
-	},
-	{
-		label: "Palworld",
-		code: "palworld",
-	},
-];
+import { useMountEffect } from "../util/hooks";
 
 EditCard.propTypes = {
 	className: PropTypes.string,
@@ -94,6 +77,35 @@ export default function EditCard({
 	const patchSettings = React.useCallback((patch) => {
 		setSettings((settings) => ({ ...settings, ...patch }));
 	}, []);
+
+	const [supportedGames, setSupportedGames] = useState([]);
+	async function getSpawningPoolSupportedGames() {
+		try {
+			const { data } = await authedAxios.get(
+				`${gatewayUrl}spawningPool/supportedGames`,
+				{
+					cache: {
+						enabled: true, // todo axios-cache-interceptor isn't actually working/deduplicating these requests
+					},
+				}
+			);
+			setSupportedGames(
+				data.games.map((game) => ({
+					label: game
+						.split("-")
+						.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+						.join(" "),
+					code: game,
+				}))
+			);
+		} catch (e) {
+			console.error("Get /gateway/spawningPool/supportedGames Error: ", e);
+			return;
+		}
+	}
+	useMountEffect(() => {
+		getSpawningPoolSupportedGames();
+	});
 
 	React.useEffect(() => {
 		if (!gameId || !isAdmin || !active) {
@@ -149,20 +161,20 @@ export default function EditCard({
 						value={settings.game || ""}
 						onChange={(event, newValue) => {
 							patchSettings({
-								game: newValue.code,
+								game: newValue?.code || "",
 								gameId:
 									settings.gameId ||
-									newValue.code + Math.ceil(Math.random() * 1000),
-								name: settings.name || newValue.label,
+									(newValue?.code || "") + Math.ceil(Math.random() * 1000),
+								name: settings.name || newValue?.label || "",
 							});
 						}}
 						isOptionEqualToValue={(option, value) => {
 							return value === option.code;
 						}}
 						options={[
-							...gameApiOptions,
+							...supportedGames,
 							...(!settings.game ||
-							gameApiOptions.find(({ code }) => settings.game === code)
+							supportedGames.find(({ code }) => settings.game === code)
 								? []
 								: [
 										{
