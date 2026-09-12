@@ -10,7 +10,7 @@ services:
       TZ: America/Vancouver
       WORLD: "${SAVENAME:-worldsave}"
       UPDATE_ON_STARTUP: 1
-      TYPE: ValheimPlus
+      TYPE: BepInEx
       MODS: ${MODS}
     ports:
       - "${GAMEPORT:-2456}:${GAMEPORT:-2456}/udp"
