@@ -205,6 +205,7 @@ export default function ModsSearch({
 											) : (
 												option.id
 											)}
+											{!!option.source && ` \u00b7 ${option.source}`}
 										</div>
 									</div>
 								</li>

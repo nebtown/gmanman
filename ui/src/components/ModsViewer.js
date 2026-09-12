@@ -77,7 +77,7 @@ export default function ModsViewer({
 					"Loading..."
 				) : (
 					<List dense={true} disablePadding>
-						{modsList.map(({ id, label, href, enabled, outdated }) => (
+						{modsList.map(({ id, label, source, href, enabled, outdated }) => (
 							<ListItem
 								key={id}
 								style={label && id ? { paddingTop: 0, paddingBottom: 0 } : {}}
@@ -99,6 +99,8 @@ export default function ModsViewer({
 											) : (
 												id
 											)}
+											{/* games served by more than one mod repo report which one */}
+											{!!source && ` \u00b7 ${source}`}
 											{!!outdated && " Old"}
 										</>
 									}
