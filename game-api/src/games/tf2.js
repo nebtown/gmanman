@@ -1,4 +1,7 @@
-const { steamWorkshopGetModSearch } = require("./common-helpers");
+const {
+	gamedigQueryPlayers,
+	steamWorkshopGetModSearch,
+} = require("./common-helpers");
 const GenericDockerManager = require("./docker");
 
 module.exports = class TF2Manager extends GenericDockerManager {
